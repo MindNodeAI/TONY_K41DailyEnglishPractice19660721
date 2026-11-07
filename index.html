@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日英文會話與核心單字朗讀練習機 (Google 權限管理版)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Firebase Compat SDK via CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    }
+    
+    :root {
+      --font-scale: 1rem;
+      --sentence-scale: 1.125rem;
+      --word-scale: 1.25rem;
+      --detail-scale: 0.875rem;
+    }
+    .font-size-large {
+      --font-scale: 1.15rem;
+      --sentence-scale: 1.35rem;
+      --word-scale: 1.5rem;
+      --detail-scale: 1rem;
+    }
+    .font-size-xlarge {
+      --font-scale: 1.3rem;
+      --sentence-scale: 1.55rem;
+      --word-scale: 1.75rem;
+      --detail-scale: 1.125rem;
+    }
+    .sentence-text {
+      font-size: var(--sentence-scale) !important;
+      line-height: 1.55 !important;
+    }
+    .word-title {
+      font-size: var(--word-scale) !important;
+    }
+    .word-sentence {
+      font-size: var(--sentence-scale) !important;
+      line-height: 1.55 !important;
+    }
+    .explanation-box {
+      font-size: var(--detail-scale) !important;
+      line-height: 1.65 !important;
+    }
+
+    .playing-card {
+      border-color: #3b82f6 !important;
+      background-color: #eff6ff !important;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25) !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-16">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Firebase 雲端同步庫</span>
+          <span id="firestoreStatus" class="inline-flex items-center gap-1 text-xs text-amber-600 font-medium">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            連線中...
+          </span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">每日英文會話與單字練習機</h1>
+      </div>
+      
+      <!-- Right Controls: Speed & Auth -->
+      <div class="flex flex-wrap items-center gap-2">
+        
+        
+        <!-- Voice Model Selector -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs">
+          <label for="voiceSelect" class="text-slate-600 font-medium px-1">發音：</label>
+          <select id="voiceSelect" class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-xs max-w-[140px] sm:max-w-[180px] truncate">
+            <option value="auto">自動挑選最佳語音</option>
+          </select>
+        </div>
+
+        <!-- Font Size Adjuster -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs">
+          <label for="fontSizeSelect" class="text-slate-600 font-medium px-1">字級：</label>
+          <select id="fontSizeSelect" class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-xs">
+            <option value="normal" selected>標準 A</option>
+            <option value="large">大字 A+</option>
+            <option value="xlarge">特大 A++</option>
+          </select>
+        </div>
+
+        <!-- Speech Speed -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs">
+          <label for="speedSelect" class="text-slate-600 font-medium px-1">語速：</label>
+          <select id="speedSelect" class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-xs">
+            <option value="0.8">0.8x 慢速</option>
+            <option value="1.0" selected>1.0x 標準</option>
+            <option value="1.2">1.2x 快速</option>
+          </select>
+          <button id="stopAllBtn" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-2.5 py-1 rounded-lg font-medium transition-colors" title="停止目前朗讀">
+            停止
+          </button>
+        </div>
+
+        <!-- Google Admin Auth Area -->
+        <div id="authContainer" class="flex items-center gap-2">
+          <button id="loginBtn" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            管理員登入
+          </button>
+          <div id="userProfileArea" class="hidden flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl text-xs text-emerald-800">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="userEmailSpan" class="font-semibold truncate max-w-[130px]"></span>
+            <button id="logoutBtn" class="text-xs text-slate-500 hover:text-red-600 underline ml-1">登出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-5">
+    
+    <!-- Date & Interactive Calendar Toolbar -->
+    <div class="bg-white rounded-xl border border-slate-200 p-4 mb-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2.5 flex-1">
+        <!-- Calendar Trigger Button -->
+        <button id="openCalendarBtn" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shadow-sm active:scale-95">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span id="calendarCurrentDateLabel">📅 2026-11-08 (今日教材)</span>
+          <span class="text-xs bg-blue-200/80 text-blue-800 px-1.5 py-0.5 rounded font-medium">切換日曆</span>
+        </button>
+
+        <!-- Dropdown Selector as quick access -->
+        <select id="lessonDateSelect" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="2026-11-08">2026-11-08 (今日教材)</option>
+        </select>
+      </div>
+
+      <!-- Admin Actions (Only active for mindnodeai@gmail.com) -->
+      <div id="adminControlsArea" class="flex flex-wrap items-center gap-2 shrink-0">
+        <button id="seedDataBtn" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5" title="以管理員身分將今日教材寫入 Firestore">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span id="seedBtnLabel">同步今日教材至雲端</span>
+        </button>
+        <button id="openImportModalBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" title="補登或批次上傳多日教材">
+          <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          批次補登／新增
+        </button>
+      </div>
+    </div>
+
+    <!-- Calendar View Modal -->
+    <div id="calendarModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <h3 class="text-base font-bold text-slate-900">學習日曆索引</h3>
+          </div>
+          <button id="closeCalendarModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Month Navigation -->
+        <div class="flex items-center justify-between px-1">
+          <button id="calPrevMonthBtn" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span id="calMonthTitle" class="text-sm font-bold text-slate-800">2026 年 11 月</span>
+          <button id="calNextMonthBtn" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <!-- Weekday Headers -->
+        <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 pb-1">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+
+        <!-- Days Grid -->
+        <div id="calDaysGrid" class="grid grid-cols-7 gap-1 text-center text-xs">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <span>有練習教材</span>
+          </div>
+          <button id="calJumpTodayBtn" class="text-blue-600 hover:underline font-semibold">跳至今日</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast / Status Banner -->
+    <div id="statusToast" class="hidden mb-4 p-3 rounded-xl text-xs font-semibold flex items-center justify-between border">
+      <span id="statusToastMsg"></span>
+      <button id="closeToastBtn" class="ml-2 text-slate-500 hover:text-slate-800">✕</button>
+    </div>
+
+    <!-- Continuous Player Banner -->
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-md mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-white/20 text-white text-xs px-2 py-0.5 rounded font-semibold uppercase tracking-wider">跟讀模式 (Shadowing)</span>
+            <span id="playingStatusBadge" class="text-xs text-blue-200">準備就緒</span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold">一鍵連續播放（自動跟讀練習）</h2>
+          <p class="text-sm text-blue-100 mt-0.5">每句之間自動預留停頓時間，方便您進行跟讀與聽力訓練</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button id="playAllSentencesBtn" class="bg-white hover:bg-blue-50 text-blue-700 font-semibold px-4 py-2.5 rounded-xl shadow-sm text-sm transition-all flex items-center gap-2 active:scale-95">
+            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+            連續朗讀10句會話
+          </button>
+          <button id="playAllWordsBtn" class="bg-blue-800/80 hover:bg-blue-800 text-white font-semibold px-4 py-2.5 rounded-xl border border-blue-400/40 text-sm transition-all flex items-center gap-2 active:scale-95">
+            <svg class="w-4 h-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+            連續朗讀10個單字
+          </button>
+        </div>
+      </div>
+      <div id="nowPlayingDisplay" class="mt-4 pt-3 border-t border-white/20 hidden">
+        <p class="text-xs text-blue-200 mb-1">正在朗讀：</p>
+        <p id="nowPlayingText" class="text-base font-semibold text-white tracking-wide"></p>
+      </div>
+    </section>
+
+    <!-- Nav Tabs & Control Bar -->
+    <div class="flex items-center justify-between border-b border-slate-200 mb-5 pb-2">
+      <div class="flex space-x-2">
+        <button id="tabSentencesBtn" class="px-4 py-2 rounded-lg font-bold text-sm bg-blue-600 text-white shadow-sm transition-all">
+          10 句常用會話句型
+        </button>
+        <button id="tabWordsBtn" class="px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+          10 個核心實用單字
+        </button>
+      </div>
+      <button id="toggleExplanationBtn" class="text-xs text-slate-600 hover:text-blue-600 font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-200 bg-white shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        <span id="toggleExpText">隱藏中文解說（自我測驗）</span>
+      </button>
+    </div>
+
+    <!-- Section: Dynamic Sentences Container -->
+    
+    <!-- Scenario Category Filter Bar -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none text-xs">
+      <span class="text-slate-500 font-semibold shrink-0">情境篩選：</span>
+      <button class="scenario-filter-btn px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow-sm transition-all" data-scenario="all">全部情境 (10)</button>
+      <button class="scenario-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0" data-scenario="workplace">職場商務</button>
+      <button class="scenario-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0" data-scenario="meeting">會議討論</button>
+      <button class="scenario-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0" data-scenario="polite">委婉委託</button>
+    </div>
+
+    <section id="sentencesSection" class="space-y-4">
+      <!-- Dynamic cards rendered by JS -->
+    </section>
+
+    <!-- Section: Dynamic Vocabulary Container -->
+    <section id="wordsSection" class="space-y-4 hidden">
+      <!-- Dynamic cards rendered by JS -->
+    </section>
+
+    <!-- Modal: Batch Backfill / Add New Lesson -->
+    <div id="importModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">批次補登與新增教材</h3>
+            <p class="text-xs text-slate-500">可補登過去未上傳的天數，或一次上傳多日資料</p>
+          </div>
+          <button id="closeImportModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        
+        <div>
+          <label for="importDateInput" class="block text-xs font-semibold text-slate-700 mb-1">指定補登日期 (YYYY-MM-DD)：</label>
+          <input type="date" id="importDateInput" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label for="importTitleInput" class="block text-xs font-semibold text-slate-700 mb-1">學習主題標題：</label>
+          <input type="text" id="importTitleInput" placeholder="例如：日常社交破冰與專案協作" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="importJsonInput" class="block text-xs font-semibold text-slate-700">教材資料 (單日 JSON 或多日陣列 JSON)：</label>
+            <button id="fillSampleBtn" class="text-xs text-blue-600 hover:underline">帶入範例格式</button>
+          </div>
+          <textarea id="importJsonInput" rows="7" placeholder="貼入當日的 sentences 與 words 資料..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 text-xs font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+        </div>
+
+        <div id="modalNoticeMsg" class="hidden text-xs p-2.5 rounded-lg"></div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button id="cancelImportBtn" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100">取消</button>
+          <button id="saveImportBtn" class="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            儲存寫入至雲端
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // -------------------------------------------------------------
+    // Firebase Config & Constants
+    // -------------------------------------------------------------
+    const ADMIN_EMAIL = "mindnodeai@gmail.com";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAefbvk37tbBE2bYCacJOaSK2-541owJDM",
+      authDomain: "k41-daily-english-practice.firebaseapp.com",
+      projectId: "k41-daily-english-practice",
+      storageBucket: "k41-daily-english-practice.firebasestorage.app",
+      messagingSenderId: "977937244126",
+      appId: "1:977937244126:web:bcca4134a8e58452f6874f",
+      measurementId: "G-512BYMN0TE"
+    };
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+
+    const firestoreStatus = document.getElementById('firestoreStatus');
+    const loginBtn = document.getElementById('loginBtn');
+    const userProfileArea = document.getElementById('userProfileArea');
+    const userEmailSpan = document.getElementById('userEmailSpan');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const statusToast = document.getElementById('statusToast');
+    const statusToastMsg = document.getElementById('statusToastMsg');
+    const closeToastBtn = document.getElementById('closeToastBtn');
+
+    function showToast(msg, isSuccess = true) {
+      statusToastMsg.textContent = msg;
+      statusToast.className = isSuccess 
+        ? 'mb-4 p-3 rounded-xl text-xs font-semibold flex items-center justify-between border bg-emerald-50 text-emerald-800 border-emerald-200'
+        : 'mb-4 p-3 rounded-xl text-xs font-semibold flex items-center justify-between border bg-amber-50 text-amber-800 border-amber-200';
+      statusToast.classList.remove('hidden');
+    }
+
+    closeToastBtn.addEventListener('click', () => {
+      statusToast.classList.add('hidden');
+    });
+
+    try {
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        auth = firebase.auth();
+        firestoreStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span>已連線至 Firebase';
+        firestoreStatus.className = 'inline-flex items-center gap-1 text-xs text-emerald-600 font-medium';
+
+        // Listen for Google Auth State
+        auth.onAuthStateChanged(user => {
+          currentUser = user;
+          if (user) {
+            loginBtn.classList.add('hidden');
+            userProfileArea.classList.remove('hidden');
+            userEmailSpan.textContent = user.email || '已登入';
+
+            if (user.email === ADMIN_EMAIL) {
+              userProfileArea.className = 'flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 px-2.5 py-1 rounded-xl text-xs text-emerald-800 font-bold';
+              showToast(`管理員 ${user.email} 已登入，具備雲端同步權限！`, true);
+            } else {
+              userProfileArea.className = 'flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-xl text-xs text-slate-700';
+              showToast(`以訪客帳號 (${user.email}) 登入，僅具備閱讀權限。`, false);
+            }
+          } else {
+            loginBtn.classList.remove('hidden');
+            userProfileArea.classList.add('hidden');
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Firebase init warning:', err);
+      firestoreStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span>本機離線模式';
+      firestoreStatus.className = 'inline-flex items-center gap-1 text-xs text-slate-500 font-medium';
+    }
+
+    
+    // Font Size Adjustment with LocalStorage Persistence
+    const fontSizeSelect = document.getElementById('fontSizeSelect');
+    function applyFontSize(size) {
+      document.body.classList.remove('font-size-large', 'font-size-xlarge');
+      if (size === 'large') {
+        document.body.classList.add('font-size-large');
+      } else if (size === 'xlarge') {
+        document.body.classList.add('font-size-xlarge');
+      }
+      try {
+        localStorage.setItem('daily_english_fontsize', size);
+      } catch (e) {
+        console.warn('localStorage not available');
+      }
+    }
+
+    fontSizeSelect.addEventListener('change', (e) => {
+      applyFontSize(e.target.value);
+    });
+
+    try {
+      const savedSize = localStorage.getItem('daily_english_fontsize');
+      if (savedSize) {
+        fontSizeSelect.value = savedSize;
+        applyFontSize(savedSize);
+      }
+    } catch (e) {}
+
+    // Google Sign-In Action
+    loginBtn.addEventListener('click', async () => {
+      if (!auth) {
+        showToast('Firebase Auth 模組尚未就緒，請稍後再試。', false);
+        return;
+      }
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (err) {
+        console.warn('Popup login failed, trying redirect:', err);
+        try {
+          await auth.signInWithRedirect(provider);
+        } catch (redirErr) {
+          showToast(`登入失敗：${redirErr.message}`, false);
+        }
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      if (auth) {
+        await auth.signOut();
+        showToast('已安全登出。', true);
+      }
+    });
+
+    // -------------------------------------------------------------
+    // Default Lesson Dataset (Today: 2026-11-08)
+    // -------------------------------------------------------------
+    const defaultTodayLesson = {
+      date: "2026-11-08",
+      title: "日常溝通與職場高效對話",
+      sentences: [
+        {
+          id: 1,
+          scenario: "專案流程解說",
+          pattern: "Could you please walk me through...?",
+          sentence: "Could you please walk me through the updated project timeline?",
+          explanation: "可以請您帶我逐步了解……嗎？",
+          detail: "「walk someone through something」常用於請求對方一步一步、有條理地解釋流程、提案或系統操作，語氣禮貌且專業。",
+          tip: "試著請求同事說明新合約的審核流程。"
+        },
+        {
+          id: 2,
+          scenario: "跨部委婉請求",
+          pattern: "I was wondering if you could...",
+          sentence: "I was wondering if you could give me some feedback on this draft.",
+          explanation: "不知您是否能……？",
+          detail: "比直接用「Can you...」更委婉客氣，過去進行式能營造柔和的語氣，適合跨部門請求協助或對主管提出詢問。",
+          tip: "試著請對方確認會議時間。"
+        },
+        {
+          id: 3,
+          scenario: "團隊達成共識",
+          pattern: "It looks like we're on the same page regarding...",
+          sentence: "It looks like we're on the same page regarding the core deliverables.",
+          explanation: "看來我們在……上有共識。",
+          detail: "「on the same page」指彼此想法一致、達成共識，常用於談判、討論或會議總結，確認雙方步調一致。",
+          tip: "試著確認大家對預算分配的想法一致。"
+        },
+        {
+          id: 4,
+          scenario: "方案徵詢意見",
+          pattern: "How does that sound to you?",
+          sentence: "We could wrap this up by Thursday. How does that sound to you?",
+          explanation: "你覺得這個提議如何？",
+          detail: "提出方案或排程後徵詢對方意見的口語表達，比「What do you think?」更具親和力與合作感。",
+          tip: "向客戶提議週五線上簡報並以此句收尾。"
+        },
+        {
+          id: 5,
+          scenario: "議題保留跟進",
+          pattern: "Let's circle back to this after...",
+          sentence: "Let's circle back to this issue after we get the final budget figures.",
+          explanation: "等……之後，我們再回頭討論這件事。",
+          detail: "「circle back」是商業溝通中的高頻片語，指當下先擱置次要議題，等取得更多資訊或會議稍後再重新討論。",
+          tip: "在會議時間不足時，提議下週一再討論該議題。"
+        },
+        {
+          id: 6,
+          scenario: "禮貌重複確認",
+          pattern: "I didn't quite catch that. Would you mind repeating it?",
+          sentence: "I didn't quite catch that last number. Would you mind repeating it?",
+          explanation: "我剛才沒完全聽清楚，能麻煩您再說一次嗎？",
+          detail: "比起生硬的「Pardon?」或「What?」，這句話體面且禮貌地表達收音不佳或語速過快，避免讓對方感到唐突。",
+          tip: "在線上會議訊號不良時，禮貌請對方重複一次。"
+        },
+        {
+          id: 7,
+          scenario: "個人觀點陳述",
+          pattern: "As far as I'm concerned, ...",
+          sentence: "As far as I'm concerned, quality is far more important than speed.",
+          explanation: "就我個人而言／就我的看法來看，……",
+          detail: "用來委婉且堅定地陳述個人觀點或原則，強調這是自身角度的觀察，保留他人討論空間。",
+          tip: "表達你對遠端工作效率的個人見解。"
+        },
+        {
+          id: 8,
+          scenario: "正式商務委託",
+          pattern: "I'd appreciate it if you could...",
+          sentence: "I'd appreciate it if you could keep me in the loop on this development.",
+          explanation: "如果您能……，我將不勝感激。",
+          detail: "標準正式英文書信與口語皆適用的委託句型，比「Please do...」更有修養，常搭配期限或具體動作。",
+          tip: "請求廠商在今天下班前提供完整報價單。"
+        },
+        {
+          id: 9,
+          scenario: "委婉提出異議",
+          pattern: "That makes total sense, but what if...",
+          sentence: "That makes total sense, but what if the client requests changes later?",
+          explanation: "那完全說得通，但如果……呢？",
+          detail: "先肯定對方的邏輯（That makes sense），再拋出潛在風險或替代方案，避免直接反駁造成對立。",
+          tip: "肯定同事的促銷方案後，提出物流可能延誤的考量。"
+        },
+        {
+          id: 10,
+          scenario: "信末收尾合作",
+          pattern: "Feel free to reach out if you need any further details.",
+          sentence: "I've attached the proposal; feel free to reach out if you need any further details.",
+          explanation: "若您需要更多細節，隨時歡迎與我聯繫。",
+          detail: "極為常見且親切的收尾句，「reach out」代表主動聯絡，適合信末、簡報尾聲或面談結束時展現開放合作態度。",
+          tip: "在寄送產品介紹文件後，用此句作為結尾問候。"
+        }
+      ],
+      words: [
+        {
+          id: 1,
+          word: "Feasible",
+          ipa: "/ˈfiː.zə.bəl/",
+          pos: "adj.",
+          meaning: "可行的、行得通的",
+          sentence: "The engineering team confirmed that the launch date is technically feasible.",
+          collocation: "economically feasible（經濟上可行的）、a feasible solution（切實可行的方案）",
+          translation: "工程團隊確認上線日期在技術上是可行的。"
+        },
+        {
+          id: 2,
+          word: "Align",
+          ipa: "/əˈlaɪn/",
+          pos: "v.",
+          meaning: "對齊、使一致、達成共識",
+          sentence: "We need to hold a sync meeting to align our targets with the sales team.",
+          collocation: "align with expectations（與預期相符）、align on a decision（在決策上取得一致）",
+          translation: "我們需要召開同步會議，以與業務團隊對齊目標。"
+        },
+        {
+          id: 3,
+          word: "Crucial",
+          ipa: "/ˈkruː.ʃəl/",
+          pos: "adj.",
+          meaning: "至關重要的、關鍵的",
+          sentence: "User feedback is crucial for our upcoming product redesign.",
+          collocation: "play a crucial role（扮演關鍵角色）、crucial factor（關鍵因素）",
+          translation: "用戶回饋對我們即將展開的產品重新設計至關重要。"
+        },
+        {
+          id: 4,
+          word: "Elaborate",
+          ipa: "/iˈlæb.ə.reɪt/",
+          pos: "v.",
+          meaning: "詳細說明、闡述",
+          sentence: "Could you elaborate on how this feature enhances data security?",
+          collocation: "elaborate on a point（詳述某論點）、elaborate plan（周密詳盡的計畫）",
+          translation: "您可以詳細說明此功能如何增強資料安全嗎？"
+        },
+        {
+          id: 5,
+          word: "Clarify",
+          ipa: "/ˈklær.ə.faɪ/",
+          pos: "v.",
+          meaning: "澄清、闡明、確認",
+          sentence: "Just to clarify, are we moving the deadline to next Monday?",
+          collocation: "clarify the misunderstanding（消除誤解）、clarify expectations（闡明期望）",
+          translation: "先確認一下，我們是要把截止日移到下週一嗎？"
+        },
+        {
+          id: 6,
+          word: "Tackle",
+          ipa: "/ˈtæk.əl/",
+          pos: "v.",
+          meaning: "著手處理、解決難題",
+          sentence: "We need to tackle the system performance bottleneck before next month.",
+          collocation: "tackle a challenge（應對挑戰）、tackle the problem directly（直面問題）",
+          translation: "我們必須在下個月之前解決系統效能瓶頸。"
+        },
+        {
+          id: 7,
+          word: "Perspective",
+          ipa: "/pəˈspek.tɪv/",
+          pos: "n.",
+          meaning: "觀點、視角",
+          sentence: "Looking at the issue from the customer's perspective revealed new opportunities.",
+          collocation: "from my perspective（依我看來）、gain a fresh perspective（獲得新視角）",
+          translation: "從客戶的角度審視此問題帶來了新的契機。"
+        },
+        {
+          id: 8,
+          word: "Compromise",
+          ipa: "/ˈkɒm.prə.maɪz/",
+          pos: "n. / v.",
+          meaning: "妥協、折衷方案",
+          sentence: "Both parties reached a compromise on the contract terms.",
+          collocation: "reach a compromise（達成妥協）、compromise on price（在價格上讓步）",
+          translation: "雙方就合約條款達成了折衷協議。"
+        },
+        {
+          id: 9,
+          word: "Proactive",
+          ipa: "/prəʊˈæk.tɪv/",
+          pos: "adj.",
+          meaning: "積極主動的、先發制人的",
+          sentence: "Taking a proactive approach to risk management prevents costly mistakes.",
+          collocation: "proactive measure（預防性措施）、proactive attitude（積極主動的態度）",
+          translation: "採取主動的風險管理方法能防止代價高昂的錯誤。"
+        },
+        {
+          id: 10,
+          word: "Insight",
+          ipa: "/ˈɪn.saɪt/",
+          pos: "n.",
+          meaning: "深刻見解、洞察力",
+          sentence: "The quarterly market research provided valuable insights into consumer behavior.",
+          collocation: "valuable insights（有價值的見解）、gain insight into（深入了解……）",
+          translation: "季度的市場調查為消費者行為提供了極具價值的深刻洞察。"
+        }
+      ]
+    };
+
+    // State
+    let currentLesson = defaultTodayLesson;
+    let explanationsVisible = true;
+
+    // -------------------------------------------------------------
+    // Render Functions
+    // -------------------------------------------------------------
+    const sentencesSection = document.getElementById('sentencesSection');
+    const wordsSection = document.getElementById('wordsSection');
+
+    function renderSentences(sentences) {
+      sentencesSection.innerHTML = '';
+      sentences.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'sentence-card bg-white rounded-xl border border-slate-200 p-5 shadow-sm transition-all duration-200';
+        div.id = `sentence-card-${index + 1}`;
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">${index + 1}</span>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-blue-700 border border-blue-200">${item.scenario || '實用情境'}</span>
+                <h3 class="text-sm font-bold text-slate-700 tracking-wide">${item.pattern}</h3>
+              </div>
+              <p class="text-lg font-bold text-slate-900 sentence-text">${item.sentence}</p>
+            </div>
+            <button class="speak-btn shrink-0 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white p-2.5 rounded-xl border border-blue-200 transition-colors flex items-center gap-1.5 text-xs font-semibold" data-text="${item.sentence}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+              <span>朗讀</span>
+            </button>
+          </div>
+          <div class="explanation-box mt-3.5 pt-3 border-t border-slate-100 space-y-1.5 text-sm ${explanationsVisible ? '' : 'hidden'}">
+            <p class="text-slate-700 font-medium"><strong>中文解說：</strong>${item.explanation}</p>
+            <p class="text-slate-600 text-xs leading-relaxed">${item.detail}</p>
+            <p class="text-blue-600 text-xs font-medium">💡 練習提示：${item.tip}</p>
+          </div>
+        `;
+        sentencesSection.appendChild(div);
+      });
+      bindSpeakButtons();
+    }
+
+    function renderWords(words) {
+      wordsSection.innerHTML = '';
+      words.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'word-card bg-white rounded-xl border border-slate-200 p-5 shadow-sm transition-all duration-200';
+        div.id = `word-card-${index + 1}`;
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex-1">
+              <div class="flex items-baseline gap-2.5 mb-1">
+                <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center shrink-0">${index + 1}</span>
+                <h3 class="text-xl font-bold text-slate-900 tracking-tight word-title">${item.word}</h3>
+                <span class="text-xs text-slate-500 font-mono">${item.ipa}</span>
+                <span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">${item.pos}</span>
+              </div>
+              <p class="text-sm font-semibold text-emerald-700 mb-2">${item.meaning}</p>
+              <p class="text-base text-slate-800 font-medium word-sentence">${item.sentence}</p>
+            </div>
+            <button class="speak-btn shrink-0 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white p-2.5 rounded-xl border border-emerald-200 transition-colors flex items-center gap-1.5 text-xs font-semibold" data-text="${item.word}. ${item.sentence}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+              <span>朗讀</span>
+            </button>
+          </div>
+          <div class="explanation-box mt-3 pt-3 border-t border-slate-100 space-y-1 text-xs text-slate-600 ${explanationsVisible ? '' : 'hidden'}">
+            <p><strong>常見搭配：</strong>${item.collocation}</p>
+            <p><strong>例句翻譯：</strong>${item.translation}</p>
+          </div>
+        `;
+        wordsSection.appendChild(div);
+      });
+      bindSpeakButtons();
+    }
+
+    function renderLesson(lesson) {
+      currentLesson = lesson;
+      renderSentences(lesson.sentences || []);
+      renderWords(lesson.words || []);
+    }
+
+    // Initial Default Render
+    renderLesson(defaultTodayLesson);
+
+    
+    // -------------------------------------------------------------
+    // Interactive Calendar Modal & Month Logic
+    // -------------------------------------------------------------
+    const openCalendarBtn = document.getElementById('openCalendarBtn');
+    const calendarModal = document.getElementById('calendarModal');
+    const closeCalendarModalBtn = document.getElementById('closeCalendarModalBtn');
+    const calMonthTitle = document.getElementById('calMonthTitle');
+    const calDaysGrid = document.getElementById('calDaysGrid');
+    const calPrevMonthBtn = document.getElementById('calPrevMonthBtn');
+    const calNextMonthBtn = document.getElementById('calNextMonthBtn');
+    const calJumpTodayBtn = document.getElementById('calJumpTodayBtn');
+    const calendarCurrentDateLabel = document.getElementById('calendarCurrentDateLabel');
+
+    let calYear = 2026;
+    let calMonth = 10; // 0-indexed: 10 = November
+    let existingLessonDates = new Set(["2026-11-08"]);
+
+    openCalendarBtn.addEventListener('click', () => {
+      renderCalendarDays();
+      calendarModal.classList.remove('hidden');
+    });
+
+    closeCalendarModalBtn.addEventListener('click', () => {
+      calendarModal.classList.add('hidden');
+    });
+
+    calPrevMonthBtn.addEventListener('click', () => {
+      calMonth--;
+      if (calMonth < 0) {
+        calMonth = 11;
+        calYear--;
+      }
+      renderCalendarDays();
+    });
+
+    calNextMonthBtn.addEventListener('click', () => {
+      calMonth++;
+      if (calMonth > 11) {
+        calMonth = 0;
+        calYear++;
+      }
+      renderCalendarDays();
+    });
+
+    calJumpTodayBtn.addEventListener('click', () => {
+      calYear = 2026;
+      calMonth = 10;
+      renderCalendarDays();
+      selectLessonByDate("2026-11-08");
+      calendarModal.classList.add('hidden');
+    });
+
+    function renderCalendarDays() {
+      calMonthTitle.textContent = `${calYear} 年 ${calMonth + 1} 月`;
+      calDaysGrid.innerHTML = '';
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const totalDays = new Date(calYear, calMonth + 1, 0).getDate();
+
+      // Empty lead days
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'p-2 text-transparent';
+        calDaysGrid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day < totalDays + 1; day++) {
+        const monthStr = String(calMonth + 1).padStart(2, '0');
+        const dayStr = String(day).padStart(2, '0');
+        const dateKey = `${calYear}-${monthStr}-${dayStr}`;
+
+        const dayBtn = document.createElement('button');
+        const hasLesson = existingLessonDates.has(dateKey);
+        const isCurrentView = (currentLesson && currentLesson.date === dateKey);
+
+        let btnClass = 'p-2 rounded-xl flex flex-col items-center justify-center transition-all relative font-medium ';
+        if (isCurrentView) {
+          btnClass += 'bg-blue-600 text-white font-bold shadow-sm';
+        } else if (hasLesson) {
+          btnClass += 'bg-blue-50 text-blue-800 font-bold hover:bg-blue-100';
+        } else {
+          btnClass += 'text-slate-400 hover:bg-slate-50';
+        }
+
+        dayBtn.className = btnClass;
+        dayBtn.innerHTML = `<span>${day}</span>`;
+
+        if (hasLesson && !isCurrentView) {
+          dayBtn.innerHTML += `<span class="w-1.5 h-1.5 rounded-full bg-blue-600 mt-0.5"></span>`;
+        }
+
+        dayBtn.addEventListener('click', () => {
+          selectLessonByDate(dateKey);
+          calendarModal.classList.add('hidden');
+        });
+
+        calDaysGrid.appendChild(dayBtn);
+      }
+    }
+
+    async function selectLessonByDate(targetDate) {
+      calendarCurrentDateLabel.textContent = `📅 ${targetDate}`;
+      lessonDateSelect.value = targetDate;
+
+      if (targetDate === "2026-11-08" && !db) {
+        renderLesson(defaultTodayLesson);
+        return;
+      }
+
+      if (db) {
+        try {
+          const doc = await db.collection('daily_lessons').doc(targetDate).get();
+          if (doc.exists) {
+            renderLesson(doc.data());
+            showToast(`已載入 ${targetDate} 學習教材`, true);
+          } else {
+            showToast(`${targetDate} 尚無教材，可使用「批次補登」新增`, false);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Firestore Data Sync & List
+    // -------------------------------------------------------------
+    const lessonDateSelect = document.getElementById('lessonDateSelect');
+    const seedDataBtn = document.getElementById('seedDataBtn');
+    const seedBtnLabel = document.getElementById('seedBtnLabel');
+
+    async function loadLessonsListFromFirestore() {
+      if (!db) return;
+      try {
+        const snapshot = await db.collection('daily_lessons').orderBy('date', 'desc').get();
+        if (!snapshot.empty) {
+          lessonDateSelect.innerHTML = '';
+          existingLessonDates.clear();
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const dKey = data.date || doc.id;
+            existingLessonDates.add(dKey);
+            const opt = document.createElement('option');
+            opt.value = dKey;
+            opt.textContent = `${dKey} (${data.title || '英文練習'})`;
+            lessonDateSelect.appendChild(opt);
+          });
+          const firstData = snapshot.docs[0].data();
+          renderLesson(firstData);
+          calendarCurrentDateLabel.textContent = `📅 ${firstData.date || '今日教材'}`;
+        }
+      } catch (err) {
+        console.log('Firestore read fallback:', err.message);
+      }
+    }
+
+    lessonDateSelect.addEventListener('change', async (e) => {
+      const selectedDate = e.target.value;
+      if (selectedDate === '2026-11-08' && !db) {
+        renderLesson(defaultTodayLesson);
+        return;
+      }
+      if (db) {
+        try {
+          const doc = await db.collection('daily_lessons').doc(selectedDate).get();
+          if (doc.exists) {
+            renderLesson(doc.data());
+          }
+        } catch (err) {
+          console.error('Fetch lesson error:', err);
+        }
+      }
+    });
+
+    // Seed Today Data Button
+    seedDataBtn.addEventListener('click', async () => {
+      if (!db) {
+        showToast('Firebase 尚未連線', false);
+        return;
+      }
+      if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+        showToast(`權限不足：請先登入管理員帳號 (${ADMIN_EMAIL})`, false);
+        return;
+      }
+
+      seedBtnLabel.textContent = '寫入中...';
+      try {
+        await db.collection('daily_lessons').doc(defaultTodayLesson.date).set(defaultTodayLesson);
+        seedBtnLabel.textContent = '已成功儲存至 Firestore！';
+        showToast(`今日教材 (${defaultTodayLesson.date}) 已成功寫入雲端！`, true);
+        setTimeout(() => {
+          seedBtnLabel.textContent = '同步今日教材至雲端';
+        }, 3000);
+        loadLessonsListFromFirestore();
+      } catch (err) {
+        console.error('Save to Firestore error:', err);
+        seedBtnLabel.textContent = '同步失敗';
+        showToast(`寫入失敗：${err.message}`, false);
+      }
+    });
+
+    // -------------------------------------------------------------
+    // Batch Backfill & New Lesson Modal
+    // -------------------------------------------------------------
+    const openImportModalBtn = document.getElementById('openImportModalBtn');
+    const importModal = document.getElementById('importModal');
+    const closeImportModalBtn = document.getElementById('closeImportModalBtn');
+    const cancelImportBtn = document.getElementById('cancelImportBtn');
+    const saveImportBtn = document.getElementById('saveImportBtn');
+    const importDateInput = document.getElementById('importDateInput');
+    const importTitleInput = document.getElementById('importTitleInput');
+    const importJsonInput = document.getElementById('importJsonInput');
+    const fillSampleBtn = document.getElementById('fillSampleBtn');
+    const modalNoticeMsg = document.getElementById('modalNoticeMsg');
+
+    openImportModalBtn.addEventListener('click', () => {
+      importDateInput.value = new Date().toISOString().split('T')[0];
+      importTitleInput.value = "日常實用口語練習";
+      importJsonInput.value = JSON.stringify({
+        sentences: defaultTodayLesson.sentences,
+        words: defaultTodayLesson.words
+      }, null, 2);
+      modalNoticeMsg.classList.add('hidden');
+      importModal.classList.remove('hidden');
+    });
+
+    fillSampleBtn.addEventListener('click', () => {
+      importJsonInput.value = JSON.stringify({
+        date: importDateInput.value || "2026-11-07",
+        title: "過往歷史教材補登範例",
+        sentences: defaultTodayLesson.sentences,
+        words: defaultTodayLesson.words
+      }, null, 2);
+    });
+
+    function closeImportModal() {
+      importModal.classList.add('hidden');
+    }
+
+    closeImportModalBtn.addEventListener('click', closeImportModal);
+    cancelImportBtn.addEventListener('click', closeImportModal);
+
+    saveImportBtn.addEventListener('click', async () => {
+      if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+        modalNoticeMsg.className = 'text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 block';
+        modalNoticeMsg.textContent = `請先登入管理員帳號 (${ADMIN_EMAIL}) 才能上傳教材。`;
+        return;
+      }
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(importJsonInput.value);
+      } catch (e) {
+        modalNoticeMsg.className = 'text-xs p-2.5 rounded-lg bg-red-50 text-red-800 border border-red-200 block';
+        modalNoticeMsg.textContent = 'JSON 格式解析錯誤，請檢查語法。';
+        return;
+      }
+
+      // Support single lesson object OR array of multiple lessons
+      const lessonsToUpload = Array.isArray(parsed) ? parsed : [parsed];
+
+      try {
+        for (const item of lessonsToUpload) {
+          const targetDate = item.date || importDateInput.value;
+          const targetTitle = item.title || importTitleInput.value || "每日英文練習";
+          const docData = {
+            date: targetDate,
+            title: targetTitle,
+            sentences: item.sentences || [],
+            words: item.words || []
+          };
+          if (db) {
+            await db.collection('daily_lessons').doc(targetDate).set(docData);
+          }
+        }
+
+        closeImportModal();
+        showToast(`已成功補登／上傳 ${lessonsToUpload.length} 天教材至 Firebase！`, true);
+        loadLessonsListFromFirestore();
+      } catch (err) {
+        modalNoticeMsg.className = 'text-xs p-2.5 rounded-lg bg-red-50 text-red-800 border border-red-200 block';
+        modalNoticeMsg.textContent = `儲存失敗：${err.message}`;
+      }
+    });
+
+    // Run Initial Load from Firestore
+    loadLessonsListFromFirestore();
+
+    
+    // Scenario Filter Logic
+    document.querySelectorAll('.scenario-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.scenario-filter-btn').forEach(b => {
+          b.className = 'scenario-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0';
+        });
+        btn.className = 'scenario-filter-btn px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow-sm transition-all shrink-0';
+
+        const filter = btn.getAttribute('data-scenario');
+        const cards = sentencesSection.querySelectorAll('.sentence-card');
+
+        cards.forEach((card, idx) => {
+          if (filter === 'all') {
+            card.classList.remove('hidden');
+          } else if (filter === 'workplace') {
+            // Cards 1, 3, 5, 8, 10
+            card.classList.toggle('hidden', ![0, 2, 4, 7, 9].includes(idx));
+          } else if (filter === 'meeting') {
+            // Cards 3, 4, 6, 7, 9
+            card.classList.toggle('hidden', ![2, 3, 5, 6, 8].includes(idx));
+          } else if (filter === 'polite') {
+            // Cards 1, 2, 6, 8, 10
+            card.classList.toggle('hidden', ![0, 1, 5, 7, 9].includes(idx));
+          }
+        });
+      });
+    });
+
+    // -------------------------------------------------------------
+    // UI Tab & Explanation Toggle
+    // -------------------------------------------------------------
+    const tabSentencesBtn = document.getElementById('tabSentencesBtn');
+    const tabWordsBtn = document.getElementById('tabWordsBtn');
+
+    tabSentencesBtn.addEventListener('click', () => {
+      sentencesSection.classList.remove('hidden');
+      wordsSection.classList.add('hidden');
+      tabSentencesBtn.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-blue-600 text-white shadow-sm transition-all';
+      tabWordsBtn.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all';
+    });
+
+    tabWordsBtn.addEventListener('click', () => {
+      wordsSection.classList.remove('hidden');
+      sentencesSection.classList.add('hidden');
+      tabWordsBtn.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-blue-600 text-white shadow-sm transition-all';
+      tabSentencesBtn.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all';
+    });
+
+    const toggleExplanationBtn = document.getElementById('toggleExplanationBtn');
+    const toggleExpText = document.getElementById('toggleExpText');
+
+    toggleExplanationBtn.addEventListener('click', () => {
+      explanationsVisible = !explanationsVisible;
+      document.querySelectorAll('.explanation-box').forEach(box => {
+        if (explanationsVisible) {
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
+        }
+      });
+      toggleExpText.textContent = explanationsVisible ? '隱藏中文解說（自我測驗）' : '顯示中文解說';
+    });
+
+    // -------------------------------------------------------------
+    // Web Speech API Engine with Intelligent Voice Detection
+    // -------------------------------------------------------------
+    const speedSelect = document.getElementById('speedSelect');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const stopAllBtn = document.getElementById('stopAllBtn');
+    const playingStatusBadge = document.getElementById('playingStatusBadge');
+    const nowPlayingDisplay = document.getElementById('nowPlayingDisplay');
+    const nowPlayingText = document.getElementById('nowPlayingText');
+
+    let availableVoices = [];
+    let autoPlayTimer = null;
+    let isAutoPlaying = false;
+    let autoPlayIndex = 0;
+    let autoPlayItems = [];
+
+    function populateVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const allVoices = window.speechSynthesis.getVoices();
+      // Filter English voices
+      const englishVoices = allVoices.filter(v => v.lang.startsWith('en') || v.lang.includes('US') || v.lang.includes('GB'));
+      
+      // Sort high quality / natural voices to the top
+      englishVoices.sort((a, b) => {
+        const score = v => {
+          let s = 0;
+          const name = v.name.toLowerCase();
+          if (name.includes('natural') || name.includes('online')) s += 10;
+          if (name.includes('google')) s += 8;
+          if (name.includes('premium') || name.includes('enhanced')) s += 7;
+          if (name.includes('samantha') || name.includes('daniel') || name.includes('jenny') || name.includes('guy')) s += 6;
+          if (v.lang === 'en-US') s += 2;
+          return s;
+        };
+        return score(b) - score(a);
+      });
+
+      availableVoices = englishVoices;
+      voiceSelect.innerHTML = '<option value="auto">✨ 推薦最佳高音質語音</option>';
+
+      let savedVoice = null;
+      try {
+        savedVoice = localStorage.getItem('daily_english_voice');
+      } catch (e) {}
+
+      englishVoices.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        
+        let label = v.name;
+        if (v.name.includes('Google US')) label = '🇺🇸 Google 美音 (流暢自然)';
+        else if (v.name.includes('Google UK')) label = '🇬🇧 Google 英音 (清晰標準)';
+        else if (v.name.includes('Jenny')) label = '🇺🇸 微軟 Jenny (真人級自然美音)';
+        else if (v.name.includes('Guy')) label = '🇺🇸 微軟 Guy (自然美式男聲)';
+        else if (v.name.includes('Samantha')) label = '🇺🇸 Apple Samantha (清晰美音)';
+        else if (v.name.includes('Daniel')) label = '🇬🇧 Apple Daniel (英倫男聲)';
+        else if (v.lang === 'en-US') label = `🇺🇸 ${v.name}`;
+        else if (v.lang === 'en-GB') label = `🇬🇧 ${v.name}`;
+
+        opt.textContent = label;
+        if (savedVoice && savedVoice === v.name) {
+          opt.selected = true;
+        }
+        voiceSelect.appendChild(opt);
+      });
+    }
+
+    if ('speechSynthesis' in window) {
+      populateVoices();
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    voiceSelect.addEventListener('change', (e) => {
+      try {
+        localStorage.setItem('daily_english_voice', e.target.value);
+      } catch (err) {}
+    });
+
+    function clearCardHighlights() {
+      document.querySelectorAll('.sentence-card, .word-card').forEach(c => {
+        c.classList.remove('playing-card');
+      });
+    }
+
+    function stopPlayback() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (autoPlayTimer) {
+        clearTimeout(autoPlayTimer);
+        autoPlayTimer = null;
+      }
+      isAutoPlaying = false;
+      clearCardHighlights();
+      playingStatusBadge.textContent = '準備就緒';
+      nowPlayingDisplay.classList.add('hidden');
+    }
+
+    stopAllBtn.addEventListener('click', stopPlayback);
+
+    function getSelectedVoice() {
+      if (!availableVoices.length) return null;
+      const chosenName = voiceSelect.value;
+      if (chosenName !== 'auto') {
+        const found = availableVoices.find(v => v.name === chosenName);
+        if (found) return found;
+      }
+      // Auto best choice: Priority to Natural / Google / Samantha
+      return availableVoices.find(v => 
+        v.name.includes('Natural') || 
+        v.name.includes('Google US') || 
+        v.name.includes('Google') || 
+        v.name.includes('Samantha') || 
+        v.name.includes('Jenny')
+      ) || availableVoices[0] || null;
+    }
+
+    function speakText(text, cardElement, onEndCallback) {
+      if (!('speechSynthesis' in window)) {
+        playingStatusBadge.textContent = '瀏覽器不支援 Web Speech API';
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      clearCardHighlights();
+
+      if (cardElement) {
+        cardElement.classList.add('playing-card');
+        cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = parseFloat(speedSelect.value) || 1.0;
+      utterance.pitch = 1.0;
+
+      const activeVoice = getSelectedVoice();
+      if (activeVoice) {
+        utterance.voice = activeVoice;
+        utterance.lang = activeVoice.lang;
+      }
+
+      playingStatusBadge.textContent = '正在朗讀...';
+      nowPlayingDisplay.classList.remove('hidden');
+      nowPlayingText.textContent = text;
+
+      utterance.onend = () => {
+        if (!isAutoPlaying) {
+          clearCardHighlights();
+          playingStatusBadge.textContent = '朗讀完畢';
+          nowPlayingDisplay.classList.add('hidden');
+        }
+        if (onEndCallback) onEndCallback();
+      };
+
+      utterance.onerror = () => {
+        clearCardHighlights();
+        playingStatusBadge.textContent = '朗讀停止';
+        nowPlayingDisplay.classList.add('hidden');
+        isAutoPlaying = false;
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function bindSpeakButtons() {
+      document.querySelectorAll('.speak-btn').forEach(btn => {
+        btn.onclick = () => {
+          stopPlayback();
+          const text = btn.getAttribute('data-text');
+          const card = btn.closest('.sentence-card') || btn.closest('.word-card');
+          speakText(text, card);
+        };
+      });
+    }
+
+    function startAutoPlayback(items) {
+      stopPlayback();
+      isAutoPlaying = true;
+      autoPlayIndex = 0;
+      autoPlayItems = items;
+
+      function playNext() {
+        if (!isAutoPlaying || autoPlayIndex >= autoPlayItems.length) {
+          stopPlayback();
+          playingStatusBadge.textContent = '全部朗讀完畢！';
+          return;
+        }
+
+        const currentItem = autoPlayItems[autoPlayIndex];
+        playingStatusBadge.textContent = `連續播放 (${autoPlayIndex + 1}/${autoPlayItems.length})`;
+        
+        speakText(currentItem.text, currentItem.card, () => {
+          if (!isAutoPlaying) return;
+          autoPlayIndex++;
+          autoPlayTimer = setTimeout(playNext, 1800);
+        });
+      }
+
+      playNext();
+    }
+
+    const playAllSentencesBtn = document.getElementById('playAllSentencesBtn');
+    playAllSentencesBtn.addEventListener('click', () => {
+      tabSentencesBtn.click();
+      const sentenceItems = [];
+      const cards = sentencesSection.querySelectorAll('.sentence-card');
+      cards.forEach(card => {
+        const btn = card.querySelector('.speak-btn');
+        if (btn) {
+          sentenceItems.push({ text: btn.getAttribute('data-text'), card });
+        }
+      });
+      startAutoPlayback(sentenceItems);
+    });
+
+    const playAllWordsBtn = document.getElementById('playAllWordsBtn');
+    playAllWordsBtn.addEventListener('click', () => {
+      tabWordsBtn.click();
+      const wordItems = [];
+      const cards = wordsSection.querySelectorAll('.word-card');
+      cards.forEach(card => {
+        const btn = card.querySelector('.speak-btn');
+        if (btn) {
+          wordItems.push({ text: btn.getAttribute('data-text'), card });
+        }
+      });
+      startAutoPlayback(wordItems);
+    });
+  </script>
+</body>
+</html>
