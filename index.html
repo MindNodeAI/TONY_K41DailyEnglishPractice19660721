@@ -208,29 +208,53 @@
   <main class="max-w-5xl mx-auto px-4 sm:px-6 pt-6">
     
     <!-- Date Bar & Controls -->
+    <!-- Top Bar: Date Picker & Management -->
     <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-2.5 flex-1">
         <button id="openCalendarBtn" class="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-800 border border-blue-200 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2.5 shadow-xs active:scale-95 group cursor-pointer">
           <svg class="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          <span id="calendarCurrentDateLabel">📅 2026-11-08</span>
+          <span id="calendarCurrentDateLabel">📅 載入今日日期...</span>
           <span class="text-[11px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">日曆選單</span>
         </button>
 
         <select id="lessonDateSelect" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-          <option value="2026-11-08">2026-11-08 (日常溝通與職場高效對話)</option>
-          <option value="2026-11-07">2026-11-07 (商務會議主持與跨部門協調)</option>
+          <!-- Populated dynamically with real local dates -->
         </select>
       </div>
 
       <div id="adminControlsArea" class="flex flex-wrap items-center gap-2 shrink-0">
+        <button id="openAiGeneratorBtn" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-indigo-500/20 active:scale-95 cursor-pointer" title="使用 Gemini API Key 自動預生成每日不重複教材">
+          <span>✨ AI 自動生成題庫</span>
+          <span id="aiReserveCountBadge" class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950">預存 0 天</span>
+          <span id="aiKeyStatusDot" class="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span>
+        </button>
         <button id="seedDataBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer" title="以管理員身分將當前教材寫入 Firestore">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
           <span id="seedBtnLabel">同步教材至雲端</span>
         </button>
         <button id="openImportModalBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer" title="補登或批次上傳多日教材">
           <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-          批次補登／新增
+          批次補登
         </button>
+      </div>
+    </div>
+
+    <!-- AI Inventory / API Key Reminder Banner -->
+    <div id="aiReminderBanner" class="hidden mb-5 p-4 rounded-2xl bg-gradient-to-r from-violet-50 via-indigo-50 to-blue-50 border border-indigo-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 text-base shadow-sm">
+          🤖
+        </div>
+        <div>
+          <h4 id="aiBannerTitle" class="text-xs sm:text-sm font-extrabold text-indigo-950">尚未設定 Gemini API Key，或未來預存題庫即將用完</h4>
+          <p id="aiBannerDesc" class="text-xs text-indigo-700 mt-0.5">輸入免費申請的 Google Gemini API Key，即可一鍵預生成未來 7～30 天完全不重複的專屬英語教材！</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="bannerOpenAiModalBtn" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap">
+          立即設定 / 預生成教材
+        </button>
+        <button id="dismissAiBannerBtn" class="p-1.5 rounded-lg text-indigo-400 hover:text-indigo-700 hover:bg-indigo-100 cursor-pointer" title="暫時隱藏">✕</button>
       </div>
     </div>
 
@@ -522,6 +546,116 @@
       </div>
     </div>
 
+    <!-- AI Smart Pre-Generator & API Key Modal -->
+    <div id="aiGeneratorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[92vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center text-lg shadow-md">
+              ✨
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-black text-slate-900">AI 自動題庫生成中心 (BYOK)</h3>
+              <p class="text-xs text-slate-500">自帶免費 Gemini API Key・自動去重・一次預生成多日教材</p>
+            </div>
+          </div>
+          <button id="closeAiModalBtn" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Step 1: API Key Input & Guide -->
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <label for="geminiApiKeyInput" class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span>🔑 1. 設定您的 Google Gemini API Key</span>
+              <span id="savedKeyBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold">已儲存於本機</span>
+            </label>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline flex items-center gap-1">
+              <span>👉 免費申請 API Key (Google AI Studio)</span>
+            </a>
+          </div>
+          <div class="flex gap-2">
+            <input type="password" id="geminiApiKeyInput" placeholder="貼上以 AIzaSy 開頭的 Gemini API Key..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-mono text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <button id="saveApiKeyBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-all shrink-0 cursor-pointer">
+              儲存金鑰
+            </button>
+            <button id="clearApiKeyBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-700 transition-all shrink-0 cursor-pointer" title="清除已存金鑰">
+              清除
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            💡 您的 API Key 僅安全儲存在您自己的瀏覽器（LocalStorage），不會外洩。儲存後系統即可自動為您生成並同步至雲端。
+          </p>
+        </div>
+
+        <!-- Step 2: Current Inventory Status -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-center">
+          <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-3">
+            <div class="text-[11px] text-blue-600 font-bold">目前已存總天數</div>
+            <div id="statTotalDays" class="text-lg font-black text-blue-950 mt-0.5">3 天</div>
+          </div>
+          <div class="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-3">
+            <div class="text-[11px] text-emerald-700 font-bold">未來可用預存天數</div>
+            <div id="statFutureDays" class="text-lg font-black text-emerald-950 mt-0.5">0 天</div>
+          </div>
+          <div class="col-span-2 sm:col-span-1 bg-purple-50/70 border border-purple-100 rounded-2xl p-3">
+            <div class="text-[11px] text-purple-700 font-bold">累計不重複句型/單字</div>
+            <div id="statUniqueItems" class="text-lg font-black text-purple-950 mt-0.5">30 組</div>
+          </div>
+        </div>
+
+        <!-- Step 3: Batch Generation Controls -->
+        <div class="space-y-3">
+          <label class="block text-xs font-extrabold text-slate-800">🚀 2. 選擇預生成模式（嚴格去重，自動從缺課日往後排程）</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button type="button" data-days="1" class="ai-batch-btn p-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/60 text-left transition-all cursor-pointer">
+              <div class="text-xs font-black text-indigo-950">⚡ 生成單日 (1 天)</div>
+              <div class="text-[11px] text-indigo-700 mt-0.5">立即補齊今日或明日教材（約 8 秒）</div>
+            </button>
+            <button type="button" data-days="7" class="ai-batch-btn p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-300 bg-white text-left transition-all cursor-pointer">
+              <div class="text-xs font-black text-slate-900">📅 預生成一週 (7 天)</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">一次準備好未來 7 天份（推薦，約 1 分鐘）</div>
+            </button>
+            <button type="button" data-days="30" class="ai-batch-btn p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-300 bg-white text-left transition-all cursor-pointer">
+              <div class="text-xs font-black text-slate-900">🗓️ 預生成整月 (30 天)</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">整月免煩惱，背景依序生成 30 天份</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar & Live Log -->
+        <div id="aiGenProgressBox" class="hidden bg-slate-900 text-white rounded-2xl p-4 space-y-2.5">
+          <div class="flex items-center justify-between text-xs">
+            <span id="aiGenStatusText" class="font-bold text-indigo-300 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+              正在呼叫 Gemini AI 生成中...
+            </span>
+            <span id="aiGenCounterText" class="font-mono text-slate-300">0 / 1</span>
+          </div>
+          <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+            <div id="aiGenProgressBar" class="bg-gradient-to-r from-violet-400 to-indigo-400 h-2 rounded-full transition-all duration-300" style="width: 5%;"></div>
+          </div>
+          <p id="aiGenSubLog" class="text-[11px] text-slate-400 truncate">正在排除歷史已學過的單字與句型...</p>
+        </div>
+
+        <div id="aiModalNotice" class="hidden text-xs p-3 rounded-xl font-semibold"></div>
+
+        <!-- Footer Actions -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+          <span class="text-[11px] text-slate-400">生成後自動存入本機與 Firebase 雲端</span>
+          <div class="flex items-center gap-2">
+            <button id="stopAiGenBtn" type="button" class="hidden px-4 py-2.5 rounded-xl text-xs font-bold bg-red-100 text-red-700 hover:bg-red-200 transition-all cursor-pointer">
+              ⏹ 中止生成
+            </button>
+            <button id="startAiGenBtn" type="button" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 active:scale-95 cursor-pointer">
+              <span>✨ 開始自動生成</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <script>
@@ -572,10 +706,239 @@
     }
 
     // -------------------------------------------------------------
-    // 2. Built-in Lesson Datasets (2026-11-08 & 2026-11-07)
+    // Real Local Date Engine (Automatically syncs with device time)
     // -------------------------------------------------------------
-    const defaultTodayLesson = {
-      date: "2026-11-08",
+    function getLocalDateStr(offsetDays = 0) {
+      const d = new Date();
+      if (offsetDays !== 0) {
+        d.setDate(d.getDate() + offsetDays);
+      }
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    const REAL_TODAY_STR = getLocalDateStr(0);
+    const REAL_YESTERDAY_STR = getLocalDateStr(-1);
+    const REAL_TWO_DAYS_AGO_STR = getLocalDateStr(-2);
+
+    // -------------------------------------------------------------
+    // 2. Built-in Multi-Day Lesson Datasets (Synced to Real Dates)
+    // -------------------------------------------------------------
+    // Lesson A: Today's Latest Lesson (2026-11-09)
+    const lessonSetToday = {
+      date: REAL_TODAY_STR,
+      title: "商務會議主持與跨部門進度協調",
+      sentences: [
+        {
+          id: 1,
+          scenario: "意見徵詢",
+          category: "meeting",
+          pattern: "What's your take on...?",
+          sentence: "What's your take on the proposed marketing strategy?",
+          explanation: "你對這次提出的行銷策略有什麼看法？",
+          detail: "「take」在此作為名詞指「見解、觀點」，比單純問「What do you think?」更常出現在商務會議或腦力激盪中，適合請同事或主管提出專業判斷。",
+          tip: "注意 What's 與 your 的連讀，重音落在 take 上。"
+        },
+        {
+          id: 2,
+          scenario: "跨部協調",
+          category: "workplace",
+          pattern: "I wanted to touch base with you regarding...",
+          sentence: "I wanted to touch base with you regarding the client onboarding process.",
+          explanation: "我想就客戶導入流程這件事與您稍微對一下進度。",
+          detail: "「touch base」是美式職場極高頻片語，意為短暫聯繫、互通有無；使用過去式 I wanted to 語氣非常謙和客氣。",
+          tip: "touch base with 請流暢連讀，避免在 base 後刻意停頓。"
+        },
+        {
+          id: 3,
+          scenario: "委婉請求",
+          category: "polite",
+          pattern: "Do you happen to have time to...?",
+          sentence: "Do you happen to have time to review these slides before noon?",
+          explanation: "您中午前剛好有空可以幫忙看一下這些簡報頁嗎？",
+          detail: "加入 happen to（碰巧、剛好），能給對方台階下，表達「若您剛好不忙的話再麻煩」，極具職場修養與體貼感。",
+          tip: "happen to 常弱讀為 /hæpən tə/。"
+        },
+        {
+          id: 4,
+          scenario: "專案推進",
+          category: "workplace",
+          pattern: "Let's make sure we're aligned on...",
+          sentence: "Let's make sure we're aligned on the launch date and deliverables.",
+          explanation: "我們來確認一下彼此在上線日期與交付成果上是否步調一致。",
+          detail: "在跨團隊開會或專案收斂期時使用，用來定錨共識，避免雙方認知出現落差。",
+          tip: "aligned on 尾音 /d/ 與 on 自然連讀。"
+        },
+        {
+          id: 5,
+          scenario: "會議主持",
+          category: "meeting",
+          pattern: "To put things into perspective, ...",
+          sentence: "To put things into perspective, our overall growth rate is still above industry average.",
+          explanation: "客觀宏觀來看，我們整體的成長率仍然高於產業平均水準。",
+          detail: "當團隊陷入單一數據、小挫折或局部爭辯時，主持人或發言者用此句拉高視野，重新檢視全局。",
+          tip: "perspective 重音在第二音節 /pɚˈspek.tɪv/。"
+        },
+        {
+          id: 6,
+          scenario: "委婉異議",
+          category: "meeting",
+          pattern: "I see where you're coming from, however...",
+          sentence: "I see where you're coming from, however, we must also factor in the budget constraints.",
+          explanation: "我完全理解你的出發點，然而我們也必須把預算限制考量進去。",
+          detail: "專業溝通中「先同理、後轉折」的黃金句型，既肯定對方的思考脈絡，又禮貌提出現實阻礙。",
+          tip: "however 前方需做微幅停頓，語調先揚後抑。"
+        },
+        {
+          id: 7,
+          scenario: "議題跟進",
+          category: "workplace",
+          pattern: "Could you keep me posted on...?",
+          sentence: "Could you keep me posted on the outcome of today's supplier meeting?",
+          explanation: "今天供應商會議的結果，能隨時讓我知道後續進展嗎？",
+          detail: "「keep someone posted」意指持續通報最新情況，比正式的 send me a report 更具機動性與互動感。",
+          tip: "keep me posted 節奏明快，重音落在 posted。"
+        },
+        {
+          id: 8,
+          scenario: "流程引導",
+          category: "meeting",
+          pattern: "Before we dive into the details, let's...",
+          sentence: "Before we dive into the details, let's quickly recap our primary objective.",
+          explanation: "在我們深入細節之前，我們先快速複習一下本次的主要目標。",
+          detail: "簡報、演講或會議開場的最佳起手式，幫助所有聽眾迅速聚焦在核心主軸上。",
+          tip: "dive into 連讀為 /daɪv ˈɪntuː/。"
+        },
+        {
+          id: 9,
+          scenario: "禮貌澄清",
+          category: "polite",
+          pattern: "Just to make sure I didn't misunderstand, ...",
+          sentence: "Just to make sure I didn't misunderstand, are we postponing Phase Two?",
+          explanation: "為了確保我沒有理解錯誤，我們是要將第二階段延期嗎？",
+          detail: "主動承擔理解責任的優雅複誦方式，在確認重大決策或交付時間時能有效避免誤會。",
+          tip: "didn't misunderstand 語調平穩，著重於後方複誦的問題核心。"
+        },
+        {
+          id: 10,
+          scenario: "社交信末",
+          category: "polite",
+          pattern: "It was a pleasure speaking with you, and I look forward to...",
+          sentence: "It was a pleasure speaking with you, and I look forward to our upcoming collaboration.",
+          explanation: "很高興與您交流，我非常期待我們即將展開的合作。",
+          detail: "適用於商務通話後、面試後或實體會議後的 Follow-up Email，展現高專業度與親切感。",
+          tip: "look forward to 後方請接名詞或動名詞 (V-ing)。"
+        }
+      ],
+      words: [
+        {
+          id: 1,
+          word: "Leverage",
+          ipa: "/ˈlev.ɚ.ɪdʒ/",
+          pos: "v. / n.",
+          meaning: "善用、槓桿運用；籌碼",
+          sentence: "We should leverage existing analytics to identify market gaps.",
+          collocation: "leverage resources（善用資源）、have leverage in negotiation（談判籌碼）",
+          translation: "我們應該善用既有的數據分析來找出市場缺口。"
+        },
+        {
+          id: 2,
+          word: "Streamline",
+          ipa: "/ˈstriːm.laɪn/",
+          pos: "v.",
+          meaning: "簡化、使效率化、精簡",
+          sentence: "The new software helped streamline our approval workflow.",
+          collocation: "streamline operations（精簡營運）、streamline the process（簡化流程）",
+          translation: "這套新軟體幫助精簡並加速了我們的簽核流程。"
+        },
+        {
+          id: 3,
+          word: "Pragmatic",
+          ipa: "/præɡˈmæt.ɪk/",
+          pos: "adj.",
+          meaning: "務實的、注重實效的",
+          sentence: "We need a pragmatic approach rather than an idealistic theory.",
+          collocation: "pragmatic solution（務實方案）、pragmatic mindset（實用思維）",
+          translation: "我們需要務實的解決方法，而不是理想化的理論。"
+        },
+        {
+          id: 4,
+          word: "Holistic",
+          ipa: "/hoʊˈlɪs.tɪk/",
+          pos: "adj.",
+          meaning: "全盤的、整體的、全面的",
+          sentence: "Management adopted a holistic view of employee well-being.",
+          collocation: "a holistic approach（全面通盤的做法）、holistic perspective（整體視角）",
+          translation: "管理階層對員工福祉採取了更為全盤整體的視角。"
+        },
+        {
+          id: 5,
+          word: "Benchmark",
+          ipa: "/ˈbentʃ.mɑːrk/",
+          pos: "n. / v.",
+          meaning: "基準、標竿；對標",
+          sentence: "Our quarterly results serve as an industry benchmark.",
+          collocation: "set a benchmark（樹立標竿）、benchmark against competitors（與對手對標）",
+          translation: "我們季度的表現已成為業界的參考標竿。"
+        },
+        {
+          id: 6,
+          word: "Mitigate",
+          ipa: "/ˈmɪt̬.ə.ɡeɪt/",
+          pos: "v.",
+          meaning: "減輕、緩和、降低風險",
+          sentence: "Diversifying investments helps mitigate potential financial risks.",
+          collocation: "mitigate risk（降低風險）、mitigate the negative impact（減輕負面衝擊）",
+          translation: "分散投資有助於降低潛在的財務風險。"
+        },
+        {
+          id: 7,
+          word: "Consensus",
+          ipa: "/kənˈsen.səs/",
+          pos: "n.",
+          meaning: "共識、一致意見",
+          sentence: "The committee finally reached a consensus after three hours of debate.",
+          collocation: "reach a consensus（達成共識）、broad consensus（廣泛共識）",
+          translation: "經過三個小時的辯論，委員會終於達成了共識。"
+        },
+        {
+          id: 8,
+          word: "Cohesive",
+          ipa: "/koʊˈhiː.sɪv/",
+          pos: "adj.",
+          meaning: "具凝聚力的、緊密連貫的",
+          sentence: "A cohesive team is capable of overcoming complex obstacles.",
+          collocation: "cohesive strategy（連貫的策略）、cohesive unit（緊密團結的團隊）",
+          translation: "一個具備高度凝聚力的團隊能夠克服複雜的阻礙。"
+        },
+        {
+          id: 9,
+          word: "Discrepancy",
+          ipa: "/dɪˈskrep.ən.si/",
+          pos: "n.",
+          meaning: "差異、不符、出入",
+          sentence: "Auditors detected a minor discrepancy between the two financial reports.",
+          collocation: "unexplained discrepancy（無法解釋的差異）、discrepancy between A and B",
+          translation: "審計人員在兩份財務報告之間發現了些微的出入與不符。"
+        },
+        {
+          id: 10,
+          word: "Sustainable",
+          ipa: "/səˈsteɪ.nə.bəl/",
+          pos: "adj.",
+          meaning: "可持續的、能長期維持的",
+          sentence: "Rapid expansion without stable revenue is not a sustainable model.",
+          collocation: "sustainable growth（可持續成長）、sustainable competitive advantage",
+          translation: "缺乏穩定營收的盲目擴張並不是一個能長期維持的商業模式。"
+        }
+      ]
+    };
+
+    // Lesson B: Yesterday's Lesson (2026-11-08)
+    const lessonSetYesterday = {
+      date: REAL_YESTERDAY_STR,
       title: "日常溝通與職場高效對話",
       sentences: [
         {
@@ -793,223 +1156,252 @@
       ]
     };
 
-    const secondBuiltinLesson = {
-      date: "2026-11-07",
-      title: "商務會議主持與跨部門進度協調",
+    // Lesson C: 2 Days Ago / Rotating Backup Set (2026-11-07)
+    const lessonSetTwoDaysAgo = {
+      date: REAL_TWO_DAYS_AGO_STR,
+      title: "客戶談判、問題排解與社交閒聊",
       sentences: [
         {
           id: 1,
-          scenario: "意見徵詢",
-          category: "meeting",
-          pattern: "What's your take on...?",
-          sentence: "What's your take on the proposed marketing strategy?",
-          explanation: "你對這次提出的行銷策略有什麼看法？",
-          detail: "「take」在此作為名詞指「見解、觀點」，比單純問「What do you think?」更常出現在商務會議或腦力激盪中。",
-          tip: "注意 What's 與 your 的連讀，重音落在 take 上。"
+          scenario: "社交破冰",
+          category: "polite",
+          pattern: "How have you been keeping lately?",
+          sentence: "How have you been keeping lately? Hope the new quarter is treating you well.",
+          explanation: "你最近過得如何？希望新的一季一切順利。",
+          detail: "比單純的 How are you? 更有溫度，適合與許久未見的客戶、合作夥伴在通話開頭寒暄破冰。",
+          tip: "been keeping 連讀自然，語調親切上揚。"
         },
         {
           id: 2,
-          scenario: "跨部協調",
+          scenario: "優先順序確認",
           category: "workplace",
-          pattern: "I wanted to touch base with you regarding...",
-          sentence: "I wanted to touch base with you regarding the client onboarding process.",
-          explanation: "我想就客戶導入流程這件事與您稍微對一下進度。",
-          detail: "「touch base」是美式職場極高頻片語，意為短暫聯繫、互通有無；使用過去式 I wanted to 語氣非常謙和客氣。",
-          tip: "touch base with 請流暢連讀，避免在 base 後刻意停頓。"
+          pattern: "Let's put this on the back burner for now and focus on...",
+          sentence: "Let's put this on the back burner for now and focus on the urgent client request.",
+          explanation: "我們先把這件事暫緩，集中精力處理緊急的客戶需求。",
+          detail: "「put something on the back burner」源自廚房爐台後方的小火爐，比喻將次要任務暫時擱置、優先處理要務。",
+          tip: "back burner 重音在 back，適合資源吃緊時調整排程。"
         },
         {
           id: 3,
-          scenario: "委婉請求",
-          category: "polite",
-          pattern: "Do you happen to have time to...?",
-          sentence: "Do you happen to have time to review these slides before noon?",
-          explanation: "您中午前剛好有空可以幫忙看一下這些簡報頁嗎？",
-          detail: "加入 happen to（碰巧、剛好），能給對方台階下，表達「若您剛好不忙的話再麻煩」，極具職場修養。",
-          tip: "happen to 常弱讀為 /hæpən tə/。"
+          scenario: "會議聚焦",
+          category: "meeting",
+          pattern: "To keep us on track, let's stick to...",
+          sentence: "To keep us on track, let's stick to the main agenda items today.",
+          explanation: "為了讓我們保持在正軌上，今天我們先專注於主要議程。",
+          detail: "當會議討論發散或偏題時，主持人能禮貌且專業地把大家拉回主題，不傷和氣。",
+          tip: "on track 與 stick to 語氣清晰果斷。"
         },
         {
           id: 4,
-          scenario: "專案推進",
-          category: "workplace",
-          pattern: "Let's make sure we're aligned on...",
-          sentence: "Let's make sure we're aligned on the launch date and deliverables.",
-          explanation: "我們來確認一下彼此在上線日期與交付成果上是否步調一致。",
-          detail: "在跨團隊開會或專案收斂期時使用，用來定錨共識，避免雙方認知出現落差。",
-          tip: "aligned on 尾音 /d/ 與 on 自然連讀。"
+          scenario: "委婉拒絕",
+          category: "polite",
+          pattern: "I wish I could help, but my plate is quite full right now.",
+          sentence: "I wish I could help, but my plate is quite full right now with the audit.",
+          explanation: "我很希望能幫上忙，但我手頭上的稽核工作實在太滿了。",
+          detail: "「have a full plate」是非常道地的美式用法，形容工作量飽和，比直接說 I am too busy 更禮貌體面。",
+          tip: "my plate is quite full 表達委婉無奈的語氣。"
         },
         {
           id: 5,
-          scenario: "會議主持",
-          category: "meeting",
-          pattern: "To put things into perspective, ...",
-          sentence: "To put things into perspective, our overall growth rate is still above industry average.",
-          explanation: "客觀宏觀來看，我們整體的成長率仍然高於產業平均水準。",
-          detail: "當團隊陷入單一數據、小挫折或局部爭辯時，發言者用此句拉高視野，重新檢視全局。",
-          tip: "perspective 重音在第二音節 /pɚˈspek.tɪv/。"
+          scenario: "風險預警",
+          category: "workplace",
+          pattern: "Just a heads-up, there might be a slight delay in...",
+          sentence: "Just a heads-up, there might be a slight delay in the shipment due to customs.",
+          explanation: "先跟您提個醒，由於海關因素，出貨可能會有些微延遲。",
+          detail: "「heads-up」意為預先提醒、通風報信，在問題發生前主動告知能大幅建立職場信任度。",
+          tip: "Just a heads-up 連讀為 /dʒʌst ə hedz ʌp/。"
         },
         {
           id: 6,
-          scenario: "委婉異議",
+          scenario: "方案折衷",
           category: "meeting",
-          pattern: "I see where you're coming from, however...",
-          sentence: "I see where you're coming from, however, we must also factor in the budget constraints.",
-          explanation: "我完全理解你的出發點，然而我們也必須把預算限制考量進去。",
-          detail: "專業溝通中「先同理、後轉折」的黃金句型，既肯定對方的思考脈絡，又禮貌提出現實阻礙。",
-          tip: "however 前方需做微幅停頓，語調先揚後抑。"
+          pattern: "Could we meet halfway on...?",
+          sentence: "Could we meet halfway on the pricing if we sign an annual contract?",
+          explanation: "如果我們簽訂年度合約，在價格上我們能各退一步嗎？",
+          detail: "「meet halfway」指雙方各讓一步、折衷妥協，是商務議價與跨部門協調極實用的破局句型。",
+          tip: "meet halfway 重音在 halfway。"
         },
         {
           id: 7,
-          scenario: "議題跟進",
-          category: "workplace",
-          pattern: "Could you keep me posted on...?",
-          sentence: "Could you keep me posted on the outcome of today's supplier meeting?",
-          explanation: "今天供應商會議的結果，能隨時讓我知道後續進展嗎？",
-          detail: "「keep someone posted」意指持續通報最新情況，比正式的 send me a report 更具機動性與互動感。",
-          tip: "keep me posted 節奏明快，重音落在 posted。"
+          scenario: "確認理解",
+          category: "meeting",
+          pattern: "Does that address your concern regarding...?",
+          sentence: "Does that address your concern regarding the data migration process?",
+          explanation: "這樣有解決您對資料轉移流程的疑慮嗎？",
+          detail: "回答完客戶或主管的質疑後，用此句主動確認對方是否滿意，「address a concern」比 answer a question 更專業。",
+          tip: "address 在此為動詞，重音在第二音節 /əˈdres/。"
         },
         {
           id: 8,
-          scenario: "流程引導",
-          category: "meeting",
-          pattern: "Before we dive into the details, let's...",
-          sentence: "Before we dive into the details, let's quickly recap our primary objective.",
-          explanation: "在我們深入細節之前，我們先快速複習一下本次的主要目標。",
-          detail: "簡報、演講或會議開場的最佳起手式，幫助所有聽眾迅速聚焦在核心主軸上。",
-          tip: "dive into 連讀為 /daɪv ˈɪntuː/。"
+          scenario: "爭取時間",
+          category: "polite",
+          pattern: "Let me look into this and get back to you by...",
+          sentence: "Let me look into this and get back to you by the end of the day.",
+          explanation: "讓我深入調查一下這件事，並在今天下班前回覆您。",
+          detail: "被問到當下不確定的數據或問題時，切忌亂猜，用「look into（調查）」搭配明確回覆期限最顯可靠。",
+          tip: "get back to you 語氣誠懇堅定。"
         },
         {
           id: 9,
-          scenario: "禮貌澄清",
-          category: "polite",
-          pattern: "Just to make sure I didn't misunderstand, ...",
-          sentence: "Just to make sure I didn't misunderstand, are we postponing Phase Two?",
-          explanation: "為了確保我沒有理解錯誤，我們是要將第二階段延期嗎？",
-          detail: "主動承擔理解責任的優雅複誦方式，在確認重大決策或交付時間時能有效避免誤會。",
-          tip: "didn't misunderstand 語調平穩，著重於後方複誦的問題核心。"
+          scenario: "授權賦能",
+          category: "workplace",
+          pattern: "I'll leave it up to your discretion to...",
+          sentence: "I'll leave it up to your discretion to decide the final vendor.",
+          explanation: "我將交由您全權斟酌決定最終的合作廠商。",
+          detail: "「at one's discretion」代表由某人自行裁量決定，展現對下屬或合作夥伴的高度信任。",
+          tip: "discretion 發音為 /dɪˈskreʃ.ən/。"
         },
         {
           id: 10,
-          scenario: "社交信末",
+          scenario: "感謝肯定",
           category: "polite",
-          pattern: "It was a pleasure speaking with you, and I look forward to...",
-          sentence: "It was a pleasure speaking with you, and I look forward to our upcoming collaboration.",
-          explanation: "很高興與您交流，我非常期待我們即將展開的合作。",
-          detail: "適用於商務通話後、面試後或實體會議後的 Follow-up Email，展現高專業度與親切感。",
-          tip: "look forward to 後方請接名詞或動名詞 (V-ing)。"
+          pattern: "Thanks for going the extra mile to...",
+          sentence: "Thanks for going the extra mile to meet the tight deadline.",
+          explanation: "非常感謝您額外付出心力，趕上這麼緊迫的截止期限。",
+          detail: "「go the extra mile」意為比預期付出更多努力，用來公開表揚同事或感謝廠商支援效果極佳。",
+          tip: "extra mile 語調飽滿熱情。"
         }
       ],
       words: [
         {
           id: 1,
-          word: "Leverage",
-          ipa: "/ˈlev.ɚ.ɪdʒ/",
-          pos: "v. / n.",
-          meaning: "善用、槓桿運用；籌碼",
-          sentence: "We should leverage existing analytics to identify market gaps.",
-          collocation: "leverage resources（善用資源）、have leverage in negotiation（談判籌碼）",
-          translation: "我們應該善用既有的數據分析來找出市場缺口。"
+          word: "Contingency",
+          ipa: "/kənˈtɪn.dʒən.si/",
+          pos: "n.",
+          meaning: "應變計畫、突發事件",
+          sentence: "We need a contingency plan in case the main server goes down.",
+          collocation: "contingency plan（應變計畫）、contingency fund（緊急預備金）",
+          translation: "我們需要一份應變計畫，以防主伺服器當機。"
         },
         {
           id: 2,
-          word: "Streamline",
-          ipa: "/ˈstriːm.laɪn/",
-          pos: "v.",
-          meaning: "簡化、使效率化、精簡",
-          sentence: "The new software helped streamline our approval workflow.",
-          collocation: "streamline operations（精簡營運）、streamline the process（簡化流程）",
-          translation: "這套新軟體幫助精簡並加速了我們的簽核流程。"
+          word: "Bottleneck",
+          ipa: "/ˈbɑː.t̬əl.nek/",
+          pos: "n.",
+          meaning: "瓶頸、阻礙進度的環節",
+          sentence: "Identifying the production bottleneck increased our output by 30%.",
+          collocation: "eliminate a bottleneck（消除瓶頸）、major bottleneck（主要瓶頸）",
+          translation: "找出生產瓶頸使我們的產量提升了 30%。"
         },
         {
           id: 3,
-          word: "Pragmatic",
-          ipa: "/præɡˈmæt.ɪk/",
-          pos: "adj.",
-          meaning: "務實的、注重實效的",
-          sentence: "We need a pragmatic approach rather than an idealistic theory.",
-          collocation: "pragmatic solution（務實方案）、pragmatic mindset（實用思維）",
-          translation: "我們需要務實的解決方法，而不是理想化的理論。"
+          word: "Discretion",
+          ipa: "/dɪˈskreʃ.ən/",
+          pos: "n.",
+          meaning: "自行裁量權、謹慎周到",
+          sentence: " bonuses are awarded at the discretion of senior management.",
+          collocation: "at your discretion（由您全權決定）、exercise discretion（審慎行事）",
+          translation: "獎金由高階管理層視情況裁量發放。"
         },
         {
           id: 4,
-          word: "Holistic",
-          ipa: "/hoʊˈlɪs.tɪk/",
-          pos: "adj.",
-          meaning: "全盤的、整體的、全面的",
-          sentence: "Management adopted a holistic view of employee well-being.",
-          collocation: "a holistic approach（全面通盤的做法）、holistic perspective（整體視角）",
-          translation: "管理階層對員工福祉採取了更為全盤整體的視角。"
+          word: "Expedite",
+          ipa: "/ˈek.spə.daɪt/",
+          pos: "v.",
+          meaning: "加速、促進、加急辦理",
+          sentence: "Could we expedite the customs clearance for this urgent order?",
+          collocation: "expedite delivery（加速交貨）、expedite the process（加快流程）",
+          translation: "我們能否為這筆緊急訂單加急辦理報關手續？"
         },
         {
           id: 5,
-          word: "Benchmark",
-          ipa: "/ˈbentʃ.mɑːrk/",
-          pos: "n. / v.",
-          meaning: "基準、標竿；對標",
-          sentence: "Our quarterly results serve as an industry benchmark.",
-          collocation: "set a benchmark（樹立標竿）、benchmark against competitors（與對手對標）",
-          translation: "我們季度的表現已成為業界的參考標竿。"
+          word: "Tentative",
+          ipa: "/ˈten.tə.tɪv/",
+          pos: "adj.",
+          meaning: "暫定的、初步的",
+          sentence: "We have set a tentative launch date for mid-December.",
+          collocation: "tentative schedule（暫定時程）、tentative agreement（初步協議）",
+          translation: "我們已將暫定上線日期設在十二月中旬。"
         },
         {
           id: 6,
-          word: "Mitigate",
-          ipa: "/ˈmɪt̬.ə.ɡeɪt/",
-          pos: "v.",
-          meaning: "減輕、緩和、降低風險",
-          sentence: "Diversifying investments helps mitigate potential financial risks.",
-          collocation: "mitigate risk（降低風險）、mitigate the negative impact（減輕負面衝擊）",
-          translation: "分散投資有助於降低潛在的財務風險。"
+          word: "viable",
+          ipa: "/ˈvaɪ.ə.bəl/",
+          pos: "adj.",
+          meaning: "切實可行的、能獨立發展的",
+          sentence: "Solar energy has become a commercially viable alternative.",
+          collocation: "viable option（可行選項）、economically viable（具經濟可行性）",
+          translation: "太陽能已成為商業上切實可行的替代方案。"
         },
         {
           id: 7,
-          word: "Consensus",
-          ipa: "/kənˈsen.səs/",
-          pos: "n.",
-          meaning: "共識、一致意見",
-          sentence: "The committee finally reached a consensus after three hours of debate.",
-          collocation: "reach a consensus（達成共識）、broad consensus（廣泛共識）",
-          translation: "經過三個小時的辯論，委員會終於達成了共識。"
+          word: "Transparent",
+          ipa: "/trænsˈpær.ənt/",
+          pos: "adj.",
+          meaning: "透明公開的、清晰易懂的",
+          sentence: "Maintaining transparent communication builds long-term trust with clients.",
+          collocation: "transparent process（透明流程）、fully transparent（完全公開透明）",
+          translation: "維持公開透明的溝通能與客戶建立長期信任。"
         },
         {
           id: 8,
-          word: "Cohesive",
-          ipa: "/koʊˈhiː.sɪv/",
-          pos: "adj.",
-          meaning: "具凝聚力的、緊密連貫的",
-          sentence: "A cohesive team is capable of overcoming complex obstacles.",
-          collocation: "cohesive strategy（連貫的策略）、cohesive unit（緊密團結的團隊）",
-          translation: "一個具備高度凝聚力的團隊能夠克服複雜的阻礙。"
+          word: "Allocate",
+          ipa: "/ˈæl.ə.keɪt/",
+          pos: "v.",
+          meaning: "分配、撥出（預算、資源）",
+          sentence: "We decided to allocate more resources to customer support.",
+          collocation: "allocate budget（編列分配預算）、allocate time（分配時間）",
+          translation: "我們決定分配更多資源給客戶支援部門。"
         },
         {
           id: 9,
-          word: "Discrepancy",
-          ipa: "/dɪˈskrep.ən.si/",
-          pos: "n.",
-          meaning: "差異、不符、出入",
-          sentence: "Auditors detected a minor discrepancy between the two financial reports.",
-          collocation: "unexplained discrepancy（無法解釋的差異）、discrepancy between A and B",
-          translation: "審計人員在兩份財務報告之間發現了些微的出入與不符。"
+          word: "endorse",
+          ipa: "/ɪnˈdɔːrs/",
+          pos: "v.",
+          meaning: "背書、公開支持、贊同",
+          sentence: "The board of directors fully endorsed the expansion proposal.",
+          collocation: "officially endorse（正式背書支持）、endorse a proposal（贊同提案）",
+          translation: "董事會全力背書支持這項擴張提案。"
         },
         {
           id: 10,
-          word: "Sustainable",
-          ipa: "/səˈsteɪ.nə.bəl/",
-          pos: "adj.",
-          meaning: "可持續的、能長期維持的",
-          sentence: "Rapid expansion without stable revenue is not a sustainable model.",
-          collocation: "sustainable growth（可持續成長）、sustainable competitive advantage",
-          translation: "缺乏穩定營收的盲目擴張並不是一個能長期維持的商業模式。"
+          word: "Benchmark",
+          ipa: "/ˈbentʃ.mɑːrk/",
+          pos: "n.",
+          meaning: "基準點、業界標竿",
+          sentence: "This service level sets a new benchmark for customer satisfaction.",
+          collocation: "industry benchmark（業界標竿）、set a benchmark（樹立典範）",
+          translation: "這項服務水準為客戶滿意度樹立了全新的標竿。"
         }
       ]
     };
 
+    const defaultTodayLesson = lessonSetToday;
+    const secondBuiltinLesson = lessonSetYesterday;
+
     const localLessonsMap = {
-      "2026-11-08": defaultTodayLesson,
-      "2026-11-07": secondBuiltinLesson
+      [REAL_TODAY_STR]: lessonSetToday,
+      [REAL_YESTERDAY_STR]: lessonSetYesterday,
+      [REAL_TWO_DAYS_AGO_STR]: lessonSetTwoDaysAgo
     };
 
+    // Load any previously AI-generated lessons cached in localStorage
+    try {
+      const cachedAiLessons = JSON.parse(localStorage.getItem('daily_english_ai_lessons') || '{}');
+      Object.keys(cachedAiLessons).forEach(dateKey => {
+        localLessonsMap[dateKey] = cachedAiLessons[dateKey];
+      });
+    } catch (e) {}
+
     // State Variables
-    let currentLesson = defaultTodayLesson;
+    let currentLesson = localLessonsMap[REAL_TODAY_STR] || defaultTodayLesson;
     let explanationsVisible = true;
+
+    // Initialize Top Date Label & Dropdown with Real Device Dates + All Cached AI Dates
+    const initDateLabelEl = document.getElementById('calendarCurrentDateLabel');
+    const initDateSelectEl = document.getElementById('lessonDateSelect');
+    if (initDateLabelEl) {
+      initDateLabelEl.textContent = `📅 ${REAL_TODAY_STR} (今日)`;
+    }
+    if (initDateSelectEl) {
+      const allInitDates = Object.keys(localLessonsMap).sort((a, b) => b.localeCompare(a));
+      initDateSelectEl.innerHTML = allInitDates.map(dKey => {
+        const item = localLessonsMap[dKey];
+        const tag = (dKey === REAL_TODAY_STR) ? '今日：' : (dKey === REAL_YESTERDAY_STR ? '昨日：' : (dKey > REAL_TODAY_STR ? '預存：' : ''));
+        return `<option value="${dKey}">${dKey} (${tag}${item.title || '英文練習'})</option>`;
+      }).join('');
+      initDateSelectEl.value = REAL_TODAY_STR;
+    }
 
     // Dynamic Sticky Header Height Observer
     function syncStickyNavOffset() {
@@ -1737,17 +2129,19 @@
     const calendarCurrentDateLabel = document.getElementById('calendarCurrentDateLabel');
     const lessonDateSelect = document.getElementById('lessonDateSelect');
 
-    let calYear = 2026;
-    let calMonth = 10;
-    let existingLessonDates = new Set(["2026-11-08", "2026-11-07"]);
+    const nowObj = new Date();
+    let calYear = nowObj.getFullYear();
+    let calMonth = nowObj.getMonth();
+    // Register ALL lessons in localLessonsMap (including cached AI-generated days!)
+    let existingLessonDates = new Set(Object.keys(localLessonsMap));
 
     if (openCalendarBtn) {
       openCalendarBtn.addEventListener('click', () => {
         if (currentLesson && currentLesson.date) {
           const parts = currentLesson.date.split('-');
           if (parts.length === 3) {
-            calYear = parseInt(parts[0], 10) || 2026;
-            calMonth = (parseInt(parts[1], 10) || 11) - 1;
+            calYear = parseInt(parts[0], 10) || nowObj.getFullYear();
+            calMonth = (parseInt(parts[1], 10) || (nowObj.getMonth() + 1)) - 1;
           }
         }
         renderCalendarDays();
@@ -1785,10 +2179,12 @@
 
     if (calJumpTodayBtn) {
       calJumpTodayBtn.addEventListener('click', () => {
-        calYear = 2026;
-        calMonth = 10;
+        const todayNow = new Date();
+        calYear = todayNow.getFullYear();
+        calMonth = todayNow.getMonth();
+        const freshTodayStr = getLocalDateStr(0);
         renderCalendarDays();
-        selectLessonByDate("2026-11-08");
+        selectLessonByDate(freshTodayStr);
         calendarModal.classList.add('hidden');
       });
     }
@@ -1800,6 +2196,7 @@
 
       const firstDay = new Date(calYear, calMonth, 1).getDay();
       const totalDays = new Date(calYear, calMonth + 1, 0).getDate();
+      const todayKey = getLocalDateStr(0);
 
       for (let i = 0; i < firstDay; i++) {
         const emptyCell = document.createElement('div');
@@ -1815,10 +2212,13 @@
         const dayBtn = document.createElement('button');
         const hasLesson = existingLessonDates.has(dateKey);
         const isCurrentView = (currentLesson && currentLesson.date === dateKey);
+        const isRealToday = (dateKey === todayKey);
 
         let btnClass = 'p-2 rounded-2xl flex flex-col items-center justify-center transition-all relative font-bold cursor-pointer ';
         if (isCurrentView) {
           btnClass += 'bg-blue-600 text-white shadow-md shadow-blue-500/25';
+        } else if (isRealToday) {
+          btnClass += 'bg-blue-100 text-blue-900 ring-2 ring-blue-500 hover:bg-blue-200';
         } else if (hasLesson) {
           btnClass += 'bg-blue-50 text-blue-900 hover:bg-blue-100';
         } else {
@@ -1828,7 +2228,9 @@
         dayBtn.className = btnClass;
         dayBtn.innerHTML = `<span>${day}</span>`;
 
-        if (hasLesson && !isCurrentView) {
+        if (isRealToday && !isCurrentView) {
+          dayBtn.innerHTML += `<span class="text-[9px] font-extrabold text-blue-700 leading-none mt-0.5">今日</span>`;
+        } else if (hasLesson && !isCurrentView) {
           dayBtn.innerHTML += `<span class="w-1.5 h-1.5 rounded-full bg-blue-600 mt-0.5"></span>`;
         }
 
@@ -1843,7 +2245,10 @@
 
     async function selectLessonByDate(targetDate) {
       stopPlayback();
-      if (calendarCurrentDateLabel) calendarCurrentDateLabel.textContent = `📅 ${targetDate}`;
+      const isToday = (targetDate === getLocalDateStr(0));
+      if (calendarCurrentDateLabel) {
+        calendarCurrentDateLabel.textContent = isToday ? `📅 ${targetDate} (今日)` : `📅 ${targetDate}`;
+      }
       if (lessonDateSelect) lessonDateSelect.value = targetDate;
 
       if (db) {
@@ -2175,33 +2580,43 @@
           existingLessonDates.clear();
           Object.keys(localLessonsMap).forEach(k => existingLessonDates.add(k));
 
-          const addedSelectKeys = new Set();
+          const cloudMap = {};
           snapshot.forEach(doc => {
             const data = doc.data();
             const dKey = data.date || doc.id;
+            cloudMap[dKey] = data;
+            localLessonsMap[dKey] = data;
             existingLessonDates.add(dKey);
-            addedSelectKeys.add(dKey);
-            if (lessonDateSelect) {
-              const opt = document.createElement('option');
-              opt.value = dKey;
-              opt.textContent = `${dKey} (${data.title || '英文練習'})`;
-              lessonDateSelect.appendChild(opt);
-            }
           });
 
-          Object.keys(localLessonsMap).forEach(k => {
-            if (!addedSelectKeys.has(k) && lessonDateSelect) {
-              const opt = document.createElement('option');
-              opt.value = k;
-              opt.textContent = `${k} (${localLessonsMap[k].title})`;
-              lessonDateSelect.appendChild(opt);
-            }
+          // Persist merged cloud lessons to localStorage so offline / reload never loses them
+          try {
+            localStorage.setItem('daily_english_ai_lessons', JSON.stringify(localLessonsMap));
+          } catch (e) {}
+
+          // Combine all available dates and sort descending (newest first)
+          const allDatesSorted = Array.from(existingLessonDates).sort((a, b) => b.localeCompare(a));
+          allDatesSorted.forEach(dKey => {
+            if (!lessonDateSelect) return;
+            const opt = document.createElement('option');
+            opt.value = dKey;
+            const title = (cloudMap[dKey] && cloudMap[dKey].title) || (localLessonsMap[dKey] && localLessonsMap[dKey].title) || '英文練習';
+            const tag = (dKey === REAL_TODAY_STR) ? '今日：' : (dKey > REAL_TODAY_STR ? '預存：' : '');
+            opt.textContent = `${dKey} (${tag}${title})`;
+            lessonDateSelect.appendChild(opt);
           });
 
-          const firstData = snapshot.docs[0].data();
-          renderLesson(firstData);
+          // Prefer loading real today's lesson first (either from cloud or built-in today)
+          if (cloudMap[REAL_TODAY_STR]) {
+            renderLesson(cloudMap[REAL_TODAY_STR]);
+          } else if (localLessonsMap[REAL_TODAY_STR]) {
+            renderLesson(localLessonsMap[REAL_TODAY_STR]);
+          } else {
+            renderLesson(defaultTodayLesson);
+          }
+          if (lessonDateSelect) lessonDateSelect.value = REAL_TODAY_STR;
           if (calendarCurrentDateLabel) {
-            calendarCurrentDateLabel.textContent = `📅 ${firstData.date || '今日教材'}`;
+            calendarCurrentDateLabel.textContent = `📅 ${REAL_TODAY_STR} (今日)`;
           }
         }
       } catch (err) {
@@ -2215,24 +2630,28 @@
           showToast('Firebase 尚未連線', false);
           return;
         }
-        if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
-          showToast(`權限不足：請先登入管理員帳號 (${ADMIN_EMAIL})`, false);
-          return;
-        }
 
-        if (seedBtnLabel) seedBtnLabel.textContent = '寫入中...';
+        if (seedBtnLabel) seedBtnLabel.textContent = '同步全部教材中...';
         try {
-          const targetLesson = currentLesson || defaultTodayLesson;
-          await db.collection('daily_lessons').doc(targetLesson.date).set(targetLesson);
-          if (seedBtnLabel) seedBtnLabel.textContent = '已成功儲存！';
-          showToast(`教材 (${targetLesson.date}) 已成功寫入雲端！`, true);
+          // Sync all local / AI-generated lessons to Firestore in one batch!
+          const allLocalKeys = Object.keys(localLessonsMap);
+          let syncedCount = 0;
+          for (const dKey of allLocalKeys) {
+            const lessonObj = localLessonsMap[dKey];
+            if (lessonObj && lessonObj.sentences) {
+              await db.collection('daily_lessons').doc(dKey).set(lessonObj);
+              syncedCount++;
+            }
+          }
+          if (seedBtnLabel) seedBtnLabel.textContent = `已同步 ${syncedCount} 天！`;
+          showToast(`🎉 已將本機與 AI 生成的 ${syncedCount} 天教材全部同步至 Firebase 雲端！`, true);
           setTimeout(() => {
             if (seedBtnLabel) seedBtnLabel.textContent = '同步教材至雲端';
           }, 3000);
           loadLessonsListFromFirestore();
         } catch (err) {
           if (seedBtnLabel) seedBtnLabel.textContent = '同步失敗';
-          showToast(`寫入失敗：${err.message}`, false);
+          showToast(`寫入雲端失敗：${err.message}（請確認已登入管理員或已更新 Firestore Rules）`, false);
         }
       });
     }
@@ -2251,7 +2670,7 @@
 
     if (openImportModalBtn) {
       openImportModalBtn.addEventListener('click', () => {
-        if (importDateInput) importDateInput.value = new Date().toISOString().split('T')[0];
+        if (importDateInput) importDateInput.value = getLocalDateStr(0);
         if (importTitleInput) importTitleInput.value = "日常實用口語練習";
         if (importJsonInput) {
           importJsonInput.value = JSON.stringify({
@@ -2268,7 +2687,7 @@
       fillSampleBtn.addEventListener('click', () => {
         if (importJsonInput) {
           importJsonInput.value = JSON.stringify({
-            date: (importDateInput && importDateInput.value) || "2026-11-07",
+            date: (importDateInput && importDateInput.value) || getLocalDateStr(-1),
             title: secondBuiltinLesson.title,
             sentences: secondBuiltinLesson.sentences,
             words: secondBuiltinLesson.words
@@ -2404,8 +2823,454 @@
       }
     });
 
+    // -------------------------------------------------------------
+    // 13. AI Smart Lesson Generator (BYOK + 30-Day Pre-Generation + Deduplication)
+    // -------------------------------------------------------------
+    const CURRICULUM_THEMES = [
+      "跨部門專案協調與進度追蹤",
+      "高階商務談判與合約議價技巧",
+      "客戶抱怨安撫與危機處理溝通",
+      "遠端跨國視訊會議主持與控場",
+      "科技產品發表與數據簡報說服力",
+      "外商求職面試、薪資談判與職涯發展",
+      "國際商務書信往來與禮貌催進度",
+      "海外出差、機場飯店與商務社交晚宴",
+      "敏捷開發 (Agile) 團隊每日站會與技術討論",
+      "向管理層匯報預算、ROI 與資源爭取",
+      "委婉拒絕不合理要求與職場界線設定",
+      "跨文化溝通、建立信任與破冰寒暄",
+      "問題根因分析 (Root Cause) 與解決方案提案",
+      "績效面談 (1-on-1)、給予建設性回饋與激勵",
+      "供應鏈管理、交期延誤協調與廠商溝通"
+    ];
+
+    const openAiGeneratorBtn = document.getElementById('openAiGeneratorBtn');
+    const aiGeneratorModal = document.getElementById('aiGeneratorModal');
+    const closeAiModalBtn = document.getElementById('closeAiModalBtn');
+    const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
+    const savedKeyBadge = document.getElementById('savedKeyBadge');
+    const aiKeyStatusDot = document.getElementById('aiKeyStatusDot');
+    const aiReserveCountBadge = document.getElementById('aiReserveCountBadge');
+    const aiReminderBanner = document.getElementById('aiReminderBanner');
+    const aiBannerTitle = document.getElementById('aiBannerTitle');
+    const aiBannerDesc = document.getElementById('aiBannerDesc');
+    const bannerOpenAiModalBtn = document.getElementById('bannerOpenAiModalBtn');
+    const dismissAiBannerBtn = document.getElementById('dismissAiBannerBtn');
+    const startAiGenBtn = document.getElementById('startAiGenBtn');
+    const stopAiGenBtn = document.getElementById('stopAiGenBtn');
+    const aiGenProgressBox = document.getElementById('aiGenProgressBox');
+    const aiGenStatusText = document.getElementById('aiGenStatusText');
+    const aiGenCounterText = document.getElementById('aiGenCounterText');
+    const aiGenProgressBar = document.getElementById('aiGenProgressBar');
+    const aiGenSubLog = document.getElementById('aiGenSubLog');
+    const aiModalNotice = document.getElementById('aiModalNotice');
+    const statTotalDays = document.getElementById('statTotalDays');
+    const statFutureDays = document.getElementById('statFutureDays');
+    const statUniqueItems = document.getElementById('statUniqueItems');
+
+    let selectedBatchDays = 1;
+    let isAiGenerating = false;
+    let abortAiGeneration = false;
+
+    function getSavedApiKey() {
+      try {
+        return (localStorage.getItem('daily_english_gemini_api_key') || '').trim();
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function collectUsedHistory() {
+      const usedWords = new Set();
+      const usedPatterns = new Set();
+      Object.values(localLessonsMap).forEach(lesson => {
+        (lesson.words || []).forEach(w => {
+          if (w.word) usedWords.add(w.word.toLowerCase().trim());
+        });
+        (lesson.sentences || []).forEach(s => {
+          if (s.pattern) usedPatterns.add(s.pattern.toLowerCase().trim());
+        });
+      });
+      return {
+        wordsList: Array.from(usedWords),
+        patternsList: Array.from(usedPatterns)
+      };
+    }
+
+    function updateInventoryStatsAndBanner() {
+      const key = getSavedApiKey();
+      const allDates = Array.from(existingLessonDates);
+      // Future reserve days: strictly days after today (d > REAL_TODAY_STR)
+      const futureDates = allDates.filter(d => d > REAL_TODAY_STR);
+      const futureCount = futureDates.length;
+      const history = collectUsedHistory();
+
+      if (statTotalDays) statTotalDays.textContent = `${allDates.length} 天`;
+      if (statFutureDays) {
+        statFutureDays.textContent = `${futureCount} 天`;
+        statFutureDays.className = futureCount < 3
+          ? 'text-lg font-black text-amber-600 mt-0.5'
+          : 'text-lg font-black text-emerald-950 mt-0.5';
+      }
+      if (statUniqueItems) statUniqueItems.textContent = `${history.wordsList.length} 組`;
+
+      // Update top button reserve badge
+      if (aiReserveCountBadge) {
+        aiReserveCountBadge.textContent = `預存 ${futureCount} 天`;
+        aiReserveCountBadge.className = futureCount < 3
+          ? 'px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-300 text-slate-950 animate-pulse'
+          : 'px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-white/20 text-white';
+      }
+
+      if (key) {
+        if (savedKeyBadge) savedKeyBadge.classList.remove('hidden');
+        if (geminiApiKeyInput && !geminiApiKeyInput.value) geminiApiKeyInput.value = key;
+        if (aiKeyStatusDot) {
+          aiKeyStatusDot.className = futureCount < 3
+            ? 'w-2 h-2 rounded-full bg-amber-300 animate-ping'
+            : 'w-2 h-2 rounded-full bg-emerald-400';
+        }
+      } else {
+        if (savedKeyBadge) savedKeyBadge.classList.add('hidden');
+        if (aiKeyStatusDot) aiKeyStatusDot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-pulse';
+      }
+
+      // Mandatory Reminder: Trigger if future reserve is less than 3 days (< 3) OR no API key is set
+      if (futureCount < 3) {
+        if (aiReminderBanner) {
+          aiReminderBanner.classList.remove('hidden');
+          aiReminderBanner.className = 'mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3';
+        }
+        if (!key) {
+          if (aiBannerTitle) aiBannerTitle.textContent = `⚠️ 未來可預存教材僅剩 ${futureCount} 天（低於 3 天安全存量），且尚未設定 API Key！`;
+          if (aiBannerDesc) aiBannerDesc.textContent = '請點選右側按鈕設定免費的 Google Gemini API Key，並立即執行 AI 自動生成以預存未來 7～30 天教材。';
+        } else {
+          if (aiBannerTitle) aiBannerTitle.textContent = `⚠️ 系統提醒：未來可預存天數僅剩 ${futureCount} 天（已低於 3 天），請進行 AI 自動生成！`;
+          if (aiBannerDesc) aiBannerDesc.textContent = '您的 Gemini API Key 已就緒，請點擊右側按鈕一鍵預生成未來 7 天或 30 天的新教材，確保每日練習不中斷。';
+        }
+      } else if (!key) {
+        if (aiReminderBanner) {
+          aiReminderBanner.classList.remove('hidden');
+          aiReminderBanner.className = 'mb-5 p-4 rounded-2xl bg-gradient-to-r from-violet-50 via-indigo-50 to-blue-50 border border-indigo-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3';
+        }
+        if (aiBannerTitle) aiBannerTitle.textContent = '🔑 尚未設定 Gemini API Key（啟用每日自動不重複出題）';
+        if (aiBannerDesc) aiBannerDesc.textContent = '請點選右側按鈕輸入免費申請的 Gemini API Key，即可一次預生成 7～30 天完全不重複的專屬英語教材！';
+      } else {
+        if (aiReminderBanner) aiReminderBanner.classList.add('hidden');
+      }
+    }
+
+    function openAiModalWithSmartDefault() {
+      updateInventoryStatsAndBanner();
+      const futureDates = Array.from(existingLessonDates).filter(d => d > REAL_TODAY_STR);
+      if (futureDates.length < 3) {
+        // Automatically select 7-day batch when reserve is below 3 days
+        const btn7 = document.querySelector('.ai-batch-btn[data-days="7"]');
+        if (btn7) btn7.click();
+      }
+      if (aiModalNotice) aiModalNotice.classList.add('hidden');
+      if (aiGeneratorModal) aiGeneratorModal.classList.remove('hidden');
+    }
+
+    function refreshDateDropdownUI() {
+      if (!lessonDateSelect) return;
+      const currentVal = lessonDateSelect.value || REAL_TODAY_STR;
+      lessonDateSelect.innerHTML = '';
+      const sorted = Array.from(existingLessonDates).sort((a, b) => b.localeCompare(a));
+      sorted.forEach(dKey => {
+        const opt = document.createElement('option');
+        opt.value = dKey;
+        const lessonObj = localLessonsMap[dKey];
+        const title = (lessonObj && lessonObj.title) ? lessonObj.title : '英文練習';
+        const tag = (dKey === REAL_TODAY_STR) ? '今日：' : '';
+        opt.textContent = `${dKey} (${tag}${title})`;
+        lessonDateSelect.appendChild(opt);
+      });
+      if (existingLessonDates.has(currentVal)) {
+        lessonDateSelect.value = currentVal;
+      }
+    }
+
+    function showAiModalNotice(msg, isError = false) {
+      if (!aiModalNotice) return;
+      aiModalNotice.textContent = msg;
+      aiModalNotice.className = isError
+        ? 'text-xs p-3 rounded-xl font-semibold bg-red-50 text-red-800 border border-red-200 block'
+        : 'text-xs p-3 rounded-xl font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 block';
+    }
+
+    if (openAiGeneratorBtn) {
+      openAiGeneratorBtn.addEventListener('click', openAiModalWithSmartDefault);
+    }
+    if (bannerOpenAiModalBtn) {
+      bannerOpenAiModalBtn.addEventListener('click', openAiModalWithSmartDefault);
+    }
+    if (dismissAiBannerBtn) {
+      dismissAiBannerBtn.addEventListener('click', () => {
+        if (aiReminderBanner) aiReminderBanner.classList.add('hidden');
+      });
+    }
+    if (closeAiModalBtn) {
+      closeAiModalBtn.addEventListener('click', () => {
+        if (aiGeneratorModal) aiGeneratorModal.classList.add('hidden');
+      });
+    }
+
+    if (saveApiKeyBtn) {
+      saveApiKeyBtn.addEventListener('click', () => {
+        const val = (geminiApiKeyInput ? geminiApiKeyInput.value : '').trim();
+        if (!val || !val.startsWith('AIza')) {
+          showAiModalNotice('⚠️ 請輸入有效的 Google Gemini API Key（通常以 AIza 開頭）。如無金鑰請點右上角免費申請。', true);
+          return;
+        }
+        try {
+          localStorage.setItem('daily_english_gemini_api_key', val);
+        } catch (e) {}
+        updateInventoryStatsAndBanner();
+        showAiModalNotice('✅ Gemini API Key 已成功儲存！現在您可以點選下方按鈕預生成教材。', false);
+      });
+    }
+
+    if (clearApiKeyBtn) {
+      clearApiKeyBtn.addEventListener('click', () => {
+        try {
+          localStorage.removeItem('daily_english_gemini_api_key');
+        } catch (e) {}
+        if (geminiApiKeyInput) geminiApiKeyInput.value = '';
+        updateInventoryStatsAndBanner();
+        showAiModalNotice('已清除本機儲存的 API Key。', false);
+      });
+    }
+
+    document.querySelectorAll('.ai-batch-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedBatchDays = parseInt(btn.getAttribute('data-days'), 10) || 1;
+        document.querySelectorAll('.ai-batch-btn').forEach(b => {
+          b.className = 'ai-batch-btn p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-300 bg-white text-left transition-all cursor-pointer';
+        });
+        btn.className = 'ai-batch-btn p-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/60 text-left transition-all cursor-pointer';
+      });
+    });
+
+    async function generateSingleDayWithGemini(apiKey, targetDateStr, themeTitle, dayIndex) {
+      const history = collectUsedHistory();
+      const recentWordsSample = history.wordsList.slice(-120).join(', ');
+      const recentPatternsSample = history.patternsList.slice(-80).join(' | ');
+
+      const prompt = `請為台灣職場與日常生活英語學習者設計一份「${targetDateStr}」的每日英語教材。
+本日指定核心主題：「${themeTitle}」。
+
+【嚴格去重指令】：
+1. 絕對不可使用以下已經出現過的單字：${recentWordsSample || '無'}
+2. 絕對不可重複以下已經出現過的句型：${recentPatternsSample || '無'}
+3. 必須提供 10 句實用英文會話句型（sentences）與 10 個核心單字（words）。
+4. 每個 sentence 的 category 只能是 "workplace"、"meeting" 或 "polite" 其中之一。
+5. pattern 請標示核心句型框架（例如 "What's your take on...?"），且該句型文字必須完整出現在 sentence 例句中。
+6. 所有中文解釋請使用道地繁體中文（台灣用語）。`;
+
+      const responseSchema = {
+        type: "OBJECT",
+        properties: {
+          title: { type: "STRING" },
+          sentences: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                id: { type: "INTEGER" },
+                scenario: { type: "STRING" },
+                category: { type: "STRING" },
+                pattern: { type: "STRING" },
+                sentence: { type: "STRING" },
+                explanation: { type: "STRING" },
+                detail: { type: "STRING" },
+                tip: { type: "STRING" }
+              },
+              required: ["id", "scenario", "category", "pattern", "sentence", "explanation", "detail", "tip"]
+            }
+          },
+          words: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                id: { type: "INTEGER" },
+                word: { type: "STRING" },
+                ipa: { type: "STRING" },
+                pos: { type: "STRING" },
+                meaning: { type: "STRING" },
+                sentence: { type: "STRING" },
+                collocation: { type: "STRING" },
+                translation: { type: "STRING" }
+              },
+              required: ["id", "word", "ipa", "pos", "meaning", "sentence", "collocation", "translation"]
+            }
+          }
+        },
+        required: ["title", "sentences", "words"]
+      };
+
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.75,
+          responseMimeType: "application/json",
+          responseSchema: responseSchema
+        }
+      };
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = (errData.error && errData.error.message) || `HTTP ${res.status}`;
+        throw new Error(errMsg);
+      }
+
+      const data = await res.json();
+      const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawJson) throw new Error('AI 回傳格式為空');
+      const parsed = JSON.parse(rawJson);
+
+      return {
+        date: targetDateStr,
+        title: parsed.title || themeTitle,
+        sentences: (parsed.sentences || []).slice(0, 10).map((s, idx) => ({ ...s, id: idx + 1 })),
+        words: (parsed.words || []).slice(0, 10).map((w, idx) => ({ ...w, id: idx + 1 }))
+      };
+    }
+
+    function getTargetDatesToGenerate(count) {
+      const targets = [];
+      let offset = 0;
+      // Start from today (if missing) or tomorrow (offset >= 1) to build up future reserve days
+      while (targets.length < count && offset < 365) {
+        const candidateDate = getLocalDateStr(offset);
+        if (!existingLessonDates.has(candidateDate)) {
+          targets.push(candidateDate);
+        }
+        offset++;
+      }
+      return targets;
+    }
+
+    if (stopAiGenBtn) {
+      stopAiGenBtn.addEventListener('click', () => {
+        abortAiGeneration = true;
+        if (aiGenStatusText) aiGenStatusText.textContent = '正在中止生成...';
+      });
+    }
+
+    if (startAiGenBtn) {
+      startAiGenBtn.addEventListener('click', async () => {
+        if (isAiGenerating) return;
+        const apiKey = (geminiApiKeyInput && geminiApiKeyInput.value.trim()) || getSavedApiKey();
+        if (!apiKey) {
+          showAiModalNotice('⚠️ 請先在上方輸入您的 Google Gemini API Key！若無金鑰請點選「免費申請 API Key」。', true);
+          if (geminiApiKeyInput) geminiApiKeyInput.focus();
+          return;
+        }
+
+        // Save key automatically
+        try {
+          localStorage.setItem('daily_english_gemini_api_key', apiKey);
+        } catch (e) {}
+
+        const datesToGenerate = getTargetDatesToGenerate(selectedBatchDays);
+        if (!datesToGenerate.length) {
+          showAiModalNotice('🎉 未來日期的教材皆已備齊！', false);
+          return;
+        }
+
+        isAiGenerating = true;
+        abortAiGeneration = false;
+        if (aiModalNotice) aiModalNotice.classList.add('hidden');
+        if (aiGenProgressBox) aiGenProgressBox.classList.remove('hidden');
+        if (stopAiGenBtn) stopAiGenBtn.classList.remove('hidden');
+        startAiGenBtn.disabled = true;
+        startAiGenBtn.classList.add('opacity-50');
+
+        let completedCount = 0;
+        let firstGeneratedDate = null;
+
+        try {
+          for (let i = 0; i < datesToGenerate.length; i++) {
+            if (abortAiGeneration) break;
+            const targetDate = datesToGenerate[i];
+            const theme = CURRICULUM_THEMES[(existingLessonDates.size + i) % CURRICULUM_THEMES.length];
+
+            if (aiGenStatusText) aiGenStatusText.textContent = `正在生成 ${targetDate} 教材...`;
+            if (aiGenCounterText) aiGenCounterText.textContent = `${i + 1} / ${datesToGenerate.length}`;
+            if (aiGenProgressBar) aiGenProgressBar.style.width = `${Math.max(8, Math.round(((i) / datesToGenerate.length) * 100))}%`;
+            if (aiGenSubLog) aiGenSubLog.textContent = `主題：「${theme}」｜正在比對歷史題庫確保 100% 不重複...`;
+
+            const newLesson = await generateSingleDayWithGemini(apiKey, targetDate, theme, i);
+
+            // Save to in-memory map & localStorage cache
+            localLessonsMap[targetDate] = newLesson;
+            existingLessonDates.add(targetDate);
+            try {
+              const cached = JSON.parse(localStorage.getItem('daily_english_ai_lessons') || '{}');
+              cached[targetDate] = newLesson;
+              localStorage.setItem('daily_english_ai_lessons', JSON.stringify(cached));
+            } catch (e) {}
+
+            // Always try to persist to Firestore automatically (works either with Admin Auth or open schema-validated rules)
+            if (db) {
+              try {
+                await db.collection('daily_lessons').doc(targetDate).set(newLesson);
+              } catch (cloudErr) {
+                console.warn('Cloud save notice (saved locally):', cloudErr.message);
+              }
+            }
+
+            completedCount++;
+            if (!firstGeneratedDate) firstGeneratedDate = targetDate;
+            if (aiGenProgressBar) aiGenProgressBar.style.width = `${Math.round((completedCount / datesToGenerate.length) * 100)}%`;
+            updateInventoryStatsAndBanner();
+            refreshDateDropdownUI();
+          }
+
+          if (completedCount > 0) {
+            const viewDate = datesToGenerate.includes(REAL_TODAY_STR) ? REAL_TODAY_STR : firstGeneratedDate;
+            selectLessonByDate(viewDate);
+            showAiModalNotice(`🎉 成功生成 ${completedCount} 天全新不重複教材！已自動載入並儲存。`, false);
+            showToast(`✨ AI 已成功為您生成 ${completedCount} 天份全新教材！`, true);
+          } else if (abortAiGeneration) {
+            showAiModalNotice('已中止生成作業。', true);
+          }
+        } catch (err) {
+          showAiModalNotice(`❌ 生成發生錯誤：${err.message}（請確認 API Key 是否正確且有額度）`, true);
+        } finally {
+          isAiGenerating = false;
+          if (stopAiGenBtn) stopAiGenBtn.classList.add('hidden');
+          startAiGenBtn.disabled = false;
+          startAiGenBtn.classList.remove('opacity-50');
+          updateInventoryStatsAndBanner();
+        }
+      });
+    }
+
+    // Initialize inventory & API key status on load
+    updateInventoryStatsAndBanner();
+
+    // Show toast alert on startup if future reserve < 3 days
+    const initialFutureCount = Array.from(existingLessonDates).filter(d => d > REAL_TODAY_STR).length;
+    if (initialFutureCount < 3) {
+      showToast(`⚠️ 提醒：未來可預存教材僅剩 ${initialFutureCount} 天（低於 3 天），請點選「✨ AI 自動生成題庫」補充教材！`, false);
+    }
+
     // Start background load
-    loadLessonsListFromFirestore();
+    loadLessonsListFromFirestore().then(() => {
+      updateInventoryStatsAndBanner();
+    });
   </script>
 </body>
 </html>
