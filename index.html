@@ -54,7 +54,7 @@
 
     .sentence-text {
       font-size: var(--sentence-scale) !important;
-      line-height: 1.55 !important;
+      line-height: 1.65 !important;
     }
     
     .word-title {
@@ -63,7 +63,13 @@
     
     .word-sentence {
       font-size: var(--sentence-scale) !important;
-      line-height: 1.55 !important;
+      line-height: 1.65 !important;
+    }
+
+    .highlight-phrase {
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      line-height: 1.8;
     }
 
     .card-active-playing {
@@ -98,7 +104,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen selection:bg-blue-100 selection:text-blue-900 pb-20">
+<body class="bg-slate-50 text-slate-800 min-h-screen selection:bg-blue-100 selection:text-blue-900 pb-24">
 
   <!-- Ambient Light Decoration -->
   <div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
@@ -136,7 +142,7 @@
 
         <!-- Mobile Login Button -->
         <div class="md:hidden">
-          <button id="mobileLoginBtn" class="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" title="登入管理員">
+          <button id="mobileLoginBtn" class="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer" title="登入管理員">
             <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
           </button>
         </div>
@@ -144,20 +150,20 @@
 
       <!-- Controls Toolbar -->
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+        <div class="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
           
           <!-- Voice Selector -->
-          <div class="flex items-center gap-1 pl-1">
+          <div class="flex items-center gap-1 pl-1 min-w-0 flex-1 sm:flex-initial">
             <span class="text-[11px] text-slate-500 font-semibold hidden sm:inline">🎙️</span>
-            <select id="voiceSelect" class="bg-white border border-slate-200 rounded-xl px-2 py-1 text-slate-700 font-semibold text-xs focus:ring-2 focus:ring-blue-500 outline-none max-w-[130px] sm:max-w-[170px] truncate shadow-xs">
+            <select id="voiceSelect" class="w-full sm:w-auto bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-slate-700 font-semibold text-xs focus:ring-2 focus:ring-blue-500 outline-none max-w-[115px] sm:max-w-[170px] truncate shadow-xs">
               <option value="auto">✨ 推薦高音質發音</option>
             </select>
           </div>
 
           <!-- Speed Selector -->
-          <div class="flex items-center gap-1 pl-1">
+          <div class="flex items-center gap-1 shrink-0">
             <span class="text-[11px] text-slate-500 font-semibold hidden sm:inline">⚡</span>
-            <select id="speedSelect" class="bg-white border border-slate-200 rounded-xl px-2 py-1 text-slate-700 font-semibold text-xs focus:ring-2 focus:ring-blue-500 outline-none shadow-xs">
+            <select id="speedSelect" class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-slate-700 font-semibold text-xs focus:ring-2 focus:ring-blue-500 outline-none shadow-xs">
               <option value="0.8">0.8x 慢</option>
               <option value="1.0" selected>1.0x 標</option>
               <option value="1.2">1.2x 快</option>
@@ -165,9 +171,9 @@
           </div>
 
           <!-- Font Size Selector -->
-          <div class="flex items-center gap-1 pl-1 pr-1">
+          <div class="flex items-center gap-1 shrink-0">
             <span class="text-[11px] text-slate-500 font-semibold hidden sm:inline">🔍</span>
-            <select id="fontSizeSelect" class="bg-white border border-slate-200 rounded-xl px-2 py-1 text-slate-700 font-semibold text-xs focus:ring-2 focus:ring-blue-500 outline-none shadow-xs">
+            <select id="fontSizeSelect" class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-slate-700 font-semibold text-xs focus:ring-2 focus:ring-blue-500 outline-none shadow-xs">
               <option value="normal" selected>標準 A</option>
               <option value="large">大字 A+</option>
               <option value="xlarge">特大 A++</option>
@@ -175,22 +181,22 @@
           </div>
 
           <!-- Stop Playing -->
-          <button id="stopAllBtn" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-xs" title="停止目前播放">
-            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+          <button id="stopAllBtn" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-xs whitespace-nowrap shrink-0 cursor-pointer" title="停止目前播放">
+            <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
             <span>停止</span>
           </button>
         </div>
 
         <!-- Google Admin Auth (Desktop) -->
         <div id="authContainer" class="hidden md:flex items-center gap-2">
-          <button id="loginBtn" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 active:scale-95">
+          <button id="loginBtn" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
             管理員登入
           </button>
           <div id="userProfileArea" class="hidden flex items-center gap-2 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-xl text-xs text-emerald-800 shadow-xs font-semibold">
             <span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200"></span>
             <span id="userEmailSpan" class="truncate max-w-[130px]"></span>
-            <button id="logoutBtn" class="text-xs text-slate-500 hover:text-red-600 underline ml-1">登出</button>
+            <button id="logoutBtn" class="text-xs text-slate-500 hover:text-red-600 underline ml-1 cursor-pointer">登出</button>
           </div>
         </div>
 
@@ -204,23 +210,24 @@
     <!-- Date Bar & Controls -->
     <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-2.5 flex-1">
-        <button id="openCalendarBtn" class="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-800 border border-blue-200 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2.5 shadow-xs active:scale-95 group">
+        <button id="openCalendarBtn" class="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-800 border border-blue-200 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2.5 shadow-xs active:scale-95 group cursor-pointer">
           <svg class="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          <span id="calendarCurrentDateLabel">📅 2026-11-08 (今日教材)</span>
+          <span id="calendarCurrentDateLabel">📅 2026-11-08</span>
           <span class="text-[11px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">日曆選單</span>
         </button>
 
         <select id="lessonDateSelect" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-          <option value="2026-11-08">2026-11-08 (今日教材)</option>
+          <option value="2026-11-08">2026-11-08 (日常溝通與職場高效對話)</option>
+          <option value="2026-11-07">2026-11-07 (商務會議主持與跨部門協調)</option>
         </select>
       </div>
 
       <div id="adminControlsArea" class="flex flex-wrap items-center gap-2 shrink-0">
-        <button id="seedDataBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="以管理員身分將今日教材寫入 Firestore">
+        <button id="seedDataBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer" title="以管理員身分將當前教材寫入 Firestore">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-          <span id="seedBtnLabel">同步今日教材至雲端</span>
+          <span id="seedBtnLabel">同步教材至雲端</span>
         </button>
-        <button id="openImportModalBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95" title="補登或批次上傳多日教材">
+        <button id="openImportModalBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer" title="補登或批次上傳多日教材">
           <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
           批次補登／新增
         </button>
@@ -233,7 +240,7 @@
         <span id="toastIcon">✨</span>
         <span id="statusToastMsg"></span>
       </div>
-      <button id="closeToastBtn" class="p-1 rounded-lg text-slate-500 hover:bg-black/5">✕</button>
+      <button id="closeToastBtn" class="p-1 rounded-lg text-slate-500 hover:bg-black/5 cursor-pointer">✕</button>
     </div>
 
     <!-- Shadowing Audio Deck -->
@@ -258,14 +265,14 @@
         </div>
 
         <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
-          <button id="playAllSentencesBtn" class="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-5 py-3 rounded-2xl shadow-lg shadow-blue-500/25 text-sm transition-all flex items-center justify-center gap-2.5 active:scale-95 group">
+          <button id="playAllSentencesBtn" class="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-5 py-3 rounded-2xl shadow-lg shadow-blue-500/25 text-sm transition-all flex items-center justify-center gap-2.5 active:scale-95 group cursor-pointer">
             <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
               <svg class="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
             </div>
             <span>連續朗讀 10 句會話</span>
           </button>
           
-          <button id="playAllWordsBtn" class="w-full sm:w-auto bg-white/10 hover:bg-white/15 text-white border border-white/20 font-bold px-5 py-3 rounded-2xl text-sm transition-all flex items-center justify-center gap-2.5 active:scale-95">
+          <button id="playAllWordsBtn" class="w-full sm:w-auto bg-white/10 hover:bg-white/15 text-white border border-white/20 font-bold px-5 py-3 rounded-2xl text-sm transition-all flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer">
             <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
               <svg class="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
             </div>
@@ -302,55 +309,55 @@
       </div>
     </section>
 
-    <!-- Main Learning Tabs & Secondary Controls (Sticky so it never disappears during reading!) -->
-    <div id="stickyTabsNav" class="sticky top-[61px] sm:top-[64px] z-20 bg-slate-50/95 backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 py-3 mb-6 transition-all shadow-xs -mx-4 px-4 sm:-mx-6 sm:px-6">
+    <!-- Main Learning Tabs & Secondary Controls (Sticky with dynamic header offset!) -->
+    <div id="stickyTabsNav" class="sticky top-[104px] md:top-[62px] z-20 bg-slate-50/95 backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 border-b border-slate-200 py-2.5 mb-5 transition-all shadow-xs -mx-4 px-4 sm:-mx-6 sm:px-6">
       
       <!-- Primary Tabs Pill (Sentences vs Words) -->
-      <div class="flex items-center bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300/60 shadow-inner">
-        <button id="tabSentencesBtn" type="button" class="px-5 py-2 rounded-xl font-extrabold text-xs sm:text-sm bg-white text-blue-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+      <div class="grid grid-cols-2 sm:flex items-center bg-slate-200/80 p-1 rounded-2xl border border-slate-300/60 shadow-inner w-full sm:w-auto">
+        <button id="tabSentencesBtn" type="button" class="justify-center px-3 sm:px-5 py-2 rounded-xl font-extrabold text-xs sm:text-sm bg-white text-blue-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>💬</span>
-          <span>10 句常用會話句型</span>
+          <span>10 句常用會話</span>
         </button>
-        <button id="tabWordsBtn" type="button" class="px-5 py-2 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2 cursor-pointer">
+        <button id="tabWordsBtn" type="button" class="justify-center px-3 sm:px-5 py-2 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>📖</span>
-          <span>10 個核心實用單字</span>
+          <span>10 個核心單字</span>
         </button>
       </div>
 
-      <!-- Quick Self-Test Toggle & Export Dropdown (No overflow clipping!) -->
-      <div class="flex flex-wrap items-center gap-2 relative z-30">
-        <button id="toggleExplanationBtn" type="button" class="text-xs text-slate-700 hover:text-blue-700 font-bold flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs active:scale-95 cursor-pointer">
-          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          <span id="toggleExpText">隱藏中文解說（自我測驗）</span>
+      <!-- Right Controls: Self-Test Toggle + Export Handout Dropdown -->
+      <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+        <button id="toggleExplanationBtn" type="button" class="flex-1 sm:flex-initial justify-center text-xs text-slate-700 hover:text-blue-700 font-bold flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs active:scale-95 cursor-pointer whitespace-nowrap">
+          <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span id="toggleExpText">隱藏中文解說</span>
         </button>
 
-        <!-- Unclipped Export Dropdown Menu -->
-        <div class="relative" id="exportDropdownContainer">
-          <button id="exportDropdownBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-900 text-white hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
-            <span>📥 匯出教材 (Word / PDF)</span>
-            <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+        <!-- Export Dropdown Container -->
+        <div class="relative flex-1 sm:flex-initial" id="exportDropdownContainer">
+          <button id="exportDropdownBtn" type="button" class="w-full justify-center px-3.5 py-2 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer whitespace-nowrap">
+            <span>📥 匯出講義</span>
+            <svg class="w-3.5 h-3.5 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div id="exportMenu" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 ring-1 ring-black/5">
-            <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-b border-slate-100">選擇匯出檔案格式</div>
-            <button id="downloadWordBtn" type="button" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer">
+          <div id="exportMenu" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 text-xs font-bold text-slate-700">
+            <div class="px-3.5 py-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">選擇下載或列印格式</div>
+            <button id="downloadWordBtn" type="button" class="w-full px-4 py-2.5 text-left hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer">
               <span class="text-base">📄</span>
               <div>
-                <div>下載 Word 講義 (.doc)</div>
-                <div class="text-[10px] font-normal text-slate-400">可用 Word / Google 文件編輯</div>
+                <div class="font-extrabold">下載 Word 講義 (.doc)</div>
+                <div class="text-[10px] text-slate-400 font-normal">可用微軟 Word 或 Google 文件編輯</div>
               </div>
             </button>
-            <button id="printHandoutBtn" type="button" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer">
+            <button id="printHandoutBtn" type="button" class="w-full px-4 py-2.5 text-left hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2.5 transition-colors border-t border-slate-100 cursor-pointer">
               <span class="text-base">📑</span>
               <div>
-                <div>列印 / 另存 PDF 講義</div>
-                <div class="text-[10px] font-normal text-slate-400">A4 雙單元高對比排版</div>
+                <div class="font-extrabold">列印 / 另存 A4 PDF</div>
+                <div class="text-[10px] text-slate-400 font-normal">開啟 A4 雙欄講義視窗另存 PDF</div>
               </div>
             </button>
-            <button id="copyMarkdownBtn" type="button" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2.5 transition-colors cursor-pointer">
+            <button id="copyMarkdownBtn" type="button" class="w-full px-4 py-2.5 text-left hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2.5 transition-colors border-t border-slate-100 cursor-pointer">
               <span class="text-base">📋</span>
               <div>
-                <div>複製純文字講義</div>
-                <div class="text-[10px] font-normal text-slate-400">適合貼入 Notion / LINE 筆記</div>
+                <div class="font-extrabold">複製純文字講義</div>
+                <div class="text-[10px] text-slate-400 font-normal">一鍵貼至 Notion、LINE 或筆記本</div>
               </div>
             </button>
           </div>
@@ -358,16 +365,27 @@
       </div>
     </div>
 
-    <!-- Section: Dynamic Sentences Container -->
+    <!-- Sentences Section Wrapper -->
     <div id="sentencesWrapper">
       <!-- Scenario Filter Pills -->
       <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-none text-xs">
         <span class="text-slate-400 font-bold shrink-0">情境過濾：</span>
-        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-bold bg-blue-600 text-white shadow-sm transition-all shrink-0" data-scenario="all">全部情境 (10)</button>
-        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0" data-scenario="workplace">💼 職場商務</button>
-        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0" data-scenario="meeting">🤝 會議溝通</button>
-        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0" data-scenario="polite">🙏 委婉委託</button>
-        <button id="showStarredBtn" class="px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1">⭐ 我的收藏清單</button>
+        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-bold bg-blue-600 text-white shadow-sm transition-all shrink-0 cursor-pointer" data-scenario="all">全部情境 (10)</button>
+        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-scenario="workplace">💼 職場商務</button>
+        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-scenario="meeting">🤝 會議溝通</button>
+        <button class="scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-scenario="polite">🙏 委婉委託</button>
+        <button id="showStarredBtn" class="px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1 cursor-pointer">
+          <span>⭐ 收藏清單</span>
+          <span id="starredCountBadge" class="px-1.5 py-0.2 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-extrabold">0</span>
+        </button>
+      </div>
+
+      <!-- Empty Filter State Notice -->
+      <div id="emptySentencesNotice" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center space-y-3 my-4">
+        <div class="text-3xl">🔍</div>
+        <div class="text-sm font-bold text-slate-700">目前篩選條件下沒有符合的會話句型</div>
+        <p class="text-xs text-slate-500">您可以點擊卡片右上角的「☆」星號將重點句子加入收藏，或切換回全部情境。</p>
+        <button id="resetFilterBtn" class="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all cursor-pointer">顯示全部會話</button>
       </div>
 
       <section id="sentencesSection" class="space-y-4">
@@ -375,10 +393,47 @@
       </section>
     </div>
 
-    <!-- Words Section -->
-    <section id="wordsSection" class="space-y-4 hidden">
-      <!-- Rendered by JS -->
-    </section>
+    <!-- Words Section Wrapper -->
+    <div id="wordsWrapper" class="hidden">
+      <div class="flex items-center justify-between gap-2 pb-3 mb-4 text-xs">
+        <span class="text-slate-500 font-bold">📖 點擊單字「🔊 朗讀」可連聽單字與完整例句</span>
+        <button id="showStarredWordsBtn" class="px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1 cursor-pointer">
+          <span>⭐ 僅看收藏單字</span>
+        </button>
+      </div>
+
+      <div id="emptyWordsNotice" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center space-y-3 my-4">
+        <div class="text-3xl">⭐</div>
+        <div class="text-sm font-bold text-slate-700">尚未收藏任何單字</div>
+        <p class="text-xs text-slate-500">點擊單字卡右上角的「☆」即可將需要加強記憶的單字加入收藏清單。</p>
+        <button id="resetWordFilterBtn" class="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all cursor-pointer">顯示全部 10 個單字</button>
+      </div>
+
+      <section id="wordsSection" class="space-y-4">
+        <!-- Rendered by JS -->
+      </section>
+    </div>
+
+    <!-- Floating Bottom Mini Player (Visible during active speech / shadowing) -->
+    <div id="floatingMiniPlayer" class="fixed bottom-4 left-4 right-4 max-w-2xl mx-auto bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-3 sm:px-5 shadow-2xl border border-white/15 z-40 hidden flex items-center justify-between gap-3 transition-all">
+      <div class="flex items-center gap-3 min-w-0 flex-1">
+        <div class="flex items-end gap-0.5 h-4 shrink-0 px-1">
+          <span class="w-1 bg-blue-400 rounded-full wave-bar-1"></span>
+          <span class="w-1 bg-indigo-400 rounded-full wave-bar-2"></span>
+          <span class="w-1 bg-sky-300 rounded-full wave-bar-3"></span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span id="miniPlayerStatus" class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/30 text-blue-200">🔊 朗讀中</span>
+            <span id="miniPlayerProgress" class="text-[10px] font-mono text-slate-400"></span>
+          </div>
+          <p id="miniPlayerText" class="text-xs sm:text-sm font-bold text-white truncate mt-0.5"></p>
+        </div>
+      </div>
+      <button id="miniStopBtn" class="bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-400/30 px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all active:scale-95 cursor-pointer">
+        ⏹ 停止
+      </button>
+    </div>
 
     <!-- Calendar Modal -->
     <div id="calendarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
@@ -393,17 +448,17 @@
               <p class="text-[11px] text-slate-400">點選藍點日期切換當天練習</p>
             </div>
           </div>
-          <button id="closeCalendarModalBtn" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100">
+          <button id="closeCalendarModalBtn" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
         <div class="flex items-center justify-between px-1">
-          <button id="calPrevMonthBtn" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+          <button id="calPrevMonthBtn" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <span id="calMonthTitle" class="text-sm font-extrabold text-slate-800">2026 年 11 月</span>
-          <button id="calNextMonthBtn" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+          <button id="calNextMonthBtn" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -419,7 +474,7 @@
             <span class="w-2 h-2 rounded-full bg-blue-600"></span>
             <span>有練習教材紀錄</span>
           </div>
-          <button id="calJumpTodayBtn" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">跳至今日</button>
+          <button id="calJumpTodayBtn" class="text-blue-600 hover:text-blue-800 font-bold hover:underline cursor-pointer">跳至今日</button>
         </div>
       </div>
     </div>
@@ -432,7 +487,7 @@
             <h3 class="text-lg font-black text-slate-900">批次補登與新增教材</h3>
             <p class="text-xs text-slate-500">支援單日或過去多天教材一次批次寫入 Firestore</p>
           </div>
-          <button id="closeImportModalBtn" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
+          <button id="closeImportModalBtn" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -450,7 +505,7 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label for="importJsonInput" class="block text-xs font-bold text-slate-700">教材資料 (JSON 格式)：</label>
-            <button id="fillSampleBtn" class="text-xs text-blue-600 hover:underline font-semibold">帶入今日範例格式</button>
+            <button id="fillSampleBtn" class="text-xs text-blue-600 hover:underline font-semibold cursor-pointer">帶入今日範例格式</button>
           </div>
           <textarea id="importJsonInput" rows="7" placeholder="貼入當日的 sentences 與 words 資料..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
         </div>
@@ -458,8 +513,8 @@
         <div id="modalNoticeMsg" class="hidden text-xs p-3 rounded-xl font-medium"></div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-          <button id="cancelImportBtn" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">取消</button>
-          <button id="saveImportBtn" class="px-5 py-2 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all flex items-center gap-1.5 active:scale-95">
+          <button id="cancelImportBtn" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">取消</button>
+          <button id="saveImportBtn" class="px-5 py-2 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
             儲存寫入至雲端
           </button>
@@ -517,7 +572,7 @@
     }
 
     // -------------------------------------------------------------
-    // 2. Default Lesson Dataset
+    // 2. Built-in Lesson Datasets (2026-11-08 & 2026-11-07)
     // -------------------------------------------------------------
     const defaultTodayLesson = {
       date: "2026-11-08",
@@ -525,7 +580,7 @@
       sentences: [
         {
           id: 1,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">Could you please walk me through</span> the updated project timeline?`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">Could you please walk me through</span> the updated project timeline?`,
           scenario: "專案流程解說",
           category: "workplace",
           pattern: "Could you please walk me through...?",
@@ -536,7 +591,7 @@
         },
         {
           id: 2,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">I was wondering if you could</span> give me some feedback on this draft.`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">I was wondering if you could</span> give me some feedback on this draft.`,
           scenario: "跨部委婉請求",
           category: "polite",
           pattern: "I was wondering if you could...",
@@ -547,7 +602,7 @@
         },
         {
           id: 3,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">It looks like we're on the same page regarding</span> the core deliverables.`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">It looks like we're on the same page regarding</span> the core deliverables.`,
           scenario: "團隊達成共識",
           category: "meeting",
           pattern: "It looks like we're on the same page regarding...",
@@ -558,7 +613,7 @@
         },
         {
           id: 4,
-          highlightHtml: `We could wrap this up by Thursday. <span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">How does that sound to you?</span>`,
+          highlightHtml: `We could wrap this up by Thursday. <span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">How does that sound to you?</span>`,
           scenario: "方案徵詢意見",
           category: "meeting",
           pattern: "How does that sound to you?",
@@ -569,7 +624,7 @@
         },
         {
           id: 5,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">Let's circle back to this</span> issue <span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">after</span> we get the final budget figures.`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">Let's circle back to this</span> issue <span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">after</span> we get the final budget figures.`,
           scenario: "議題保留跟進",
           category: "workplace",
           pattern: "Let's circle back to this after...",
@@ -580,7 +635,7 @@
         },
         {
           id: 6,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">I didn't quite catch that</span> last number. <span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">Would you mind repeating it?</span>`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">I didn't quite catch that</span> last number. <span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">Would you mind repeating it?</span>`,
           scenario: "禮貌重複確認",
           category: "polite",
           pattern: "I didn't quite catch that. Would you mind repeating it?",
@@ -591,7 +646,7 @@
         },
         {
           id: 7,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">As far as I'm concerned,</span> quality is far more important than speed.`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">As far as I'm concerned,</span> quality is far more important than speed.`,
           scenario: "個人觀點陳述",
           category: "meeting",
           pattern: "As far as I'm concerned, ...",
@@ -602,7 +657,7 @@
         },
         {
           id: 8,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">I'd appreciate it if you could</span> keep me in the loop on this development.`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">I'd appreciate it if you could</span> keep me in the loop on this development.`,
           scenario: "正式商務委託",
           category: "workplace",
           pattern: "I'd appreciate it if you could...",
@@ -613,7 +668,7 @@
         },
         {
           id: 9,
-          highlightHtml: `<span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">That makes total sense, but what if</span> the client requests changes later?`,
+          highlightHtml: `<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">That makes total sense, but what if</span> the client requests changes later?`,
           scenario: "委婉提出異議",
           category: "meeting",
           pattern: "That makes total sense, but what if...",
@@ -624,7 +679,7 @@
         },
         {
           id: 10,
-          highlightHtml: `I've attached the proposal; <span class="text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">feel free to reach out if you need any further details.</span>`,
+          highlightHtml: `I've attached the proposal; <span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">feel free to reach out if you need any further details.</span>`,
           scenario: "信末收尾合作",
           category: "workplace",
           pattern: "Feel free to reach out if you need any further details.",
@@ -738,9 +793,240 @@
       ]
     };
 
+    const secondBuiltinLesson = {
+      date: "2026-11-07",
+      title: "商務會議主持與跨部門進度協調",
+      sentences: [
+        {
+          id: 1,
+          scenario: "意見徵詢",
+          category: "meeting",
+          pattern: "What's your take on...?",
+          sentence: "What's your take on the proposed marketing strategy?",
+          explanation: "你對這次提出的行銷策略有什麼看法？",
+          detail: "「take」在此作為名詞指「見解、觀點」，比單純問「What do you think?」更常出現在商務會議或腦力激盪中。",
+          tip: "注意 What's 與 your 的連讀，重音落在 take 上。"
+        },
+        {
+          id: 2,
+          scenario: "跨部協調",
+          category: "workplace",
+          pattern: "I wanted to touch base with you regarding...",
+          sentence: "I wanted to touch base with you regarding the client onboarding process.",
+          explanation: "我想就客戶導入流程這件事與您稍微對一下進度。",
+          detail: "「touch base」是美式職場極高頻片語，意為短暫聯繫、互通有無；使用過去式 I wanted to 語氣非常謙和客氣。",
+          tip: "touch base with 請流暢連讀，避免在 base 後刻意停頓。"
+        },
+        {
+          id: 3,
+          scenario: "委婉請求",
+          category: "polite",
+          pattern: "Do you happen to have time to...?",
+          sentence: "Do you happen to have time to review these slides before noon?",
+          explanation: "您中午前剛好有空可以幫忙看一下這些簡報頁嗎？",
+          detail: "加入 happen to（碰巧、剛好），能給對方台階下，表達「若您剛好不忙的話再麻煩」，極具職場修養。",
+          tip: "happen to 常弱讀為 /hæpən tə/。"
+        },
+        {
+          id: 4,
+          scenario: "專案推進",
+          category: "workplace",
+          pattern: "Let's make sure we're aligned on...",
+          sentence: "Let's make sure we're aligned on the launch date and deliverables.",
+          explanation: "我們來確認一下彼此在上線日期與交付成果上是否步調一致。",
+          detail: "在跨團隊開會或專案收斂期時使用，用來定錨共識，避免雙方認知出現落差。",
+          tip: "aligned on 尾音 /d/ 與 on 自然連讀。"
+        },
+        {
+          id: 5,
+          scenario: "會議主持",
+          category: "meeting",
+          pattern: "To put things into perspective, ...",
+          sentence: "To put things into perspective, our overall growth rate is still above industry average.",
+          explanation: "客觀宏觀來看，我們整體的成長率仍然高於產業平均水準。",
+          detail: "當團隊陷入單一數據、小挫折或局部爭辯時，發言者用此句拉高視野，重新檢視全局。",
+          tip: "perspective 重音在第二音節 /pɚˈspek.tɪv/。"
+        },
+        {
+          id: 6,
+          scenario: "委婉異議",
+          category: "meeting",
+          pattern: "I see where you're coming from, however...",
+          sentence: "I see where you're coming from, however, we must also factor in the budget constraints.",
+          explanation: "我完全理解你的出發點，然而我們也必須把預算限制考量進去。",
+          detail: "專業溝通中「先同理、後轉折」的黃金句型，既肯定對方的思考脈絡，又禮貌提出現實阻礙。",
+          tip: "however 前方需做微幅停頓，語調先揚後抑。"
+        },
+        {
+          id: 7,
+          scenario: "議題跟進",
+          category: "workplace",
+          pattern: "Could you keep me posted on...?",
+          sentence: "Could you keep me posted on the outcome of today's supplier meeting?",
+          explanation: "今天供應商會議的結果，能隨時讓我知道後續進展嗎？",
+          detail: "「keep someone posted」意指持續通報最新情況，比正式的 send me a report 更具機動性與互動感。",
+          tip: "keep me posted 節奏明快，重音落在 posted。"
+        },
+        {
+          id: 8,
+          scenario: "流程引導",
+          category: "meeting",
+          pattern: "Before we dive into the details, let's...",
+          sentence: "Before we dive into the details, let's quickly recap our primary objective.",
+          explanation: "在我們深入細節之前，我們先快速複習一下本次的主要目標。",
+          detail: "簡報、演講或會議開場的最佳起手式，幫助所有聽眾迅速聚焦在核心主軸上。",
+          tip: "dive into 連讀為 /daɪv ˈɪntuː/。"
+        },
+        {
+          id: 9,
+          scenario: "禮貌澄清",
+          category: "polite",
+          pattern: "Just to make sure I didn't misunderstand, ...",
+          sentence: "Just to make sure I didn't misunderstand, are we postponing Phase Two?",
+          explanation: "為了確保我沒有理解錯誤，我們是要將第二階段延期嗎？",
+          detail: "主動承擔理解責任的優雅複誦方式，在確認重大決策或交付時間時能有效避免誤會。",
+          tip: "didn't misunderstand 語調平穩，著重於後方複誦的問題核心。"
+        },
+        {
+          id: 10,
+          scenario: "社交信末",
+          category: "polite",
+          pattern: "It was a pleasure speaking with you, and I look forward to...",
+          sentence: "It was a pleasure speaking with you, and I look forward to our upcoming collaboration.",
+          explanation: "很高興與您交流，我非常期待我們即將展開的合作。",
+          detail: "適用於商務通話後、面試後或實體會議後的 Follow-up Email，展現高專業度與親切感。",
+          tip: "look forward to 後方請接名詞或動名詞 (V-ing)。"
+        }
+      ],
+      words: [
+        {
+          id: 1,
+          word: "Leverage",
+          ipa: "/ˈlev.ɚ.ɪdʒ/",
+          pos: "v. / n.",
+          meaning: "善用、槓桿運用；籌碼",
+          sentence: "We should leverage existing analytics to identify market gaps.",
+          collocation: "leverage resources（善用資源）、have leverage in negotiation（談判籌碼）",
+          translation: "我們應該善用既有的數據分析來找出市場缺口。"
+        },
+        {
+          id: 2,
+          word: "Streamline",
+          ipa: "/ˈstriːm.laɪn/",
+          pos: "v.",
+          meaning: "簡化、使效率化、精簡",
+          sentence: "The new software helped streamline our approval workflow.",
+          collocation: "streamline operations（精簡營運）、streamline the process（簡化流程）",
+          translation: "這套新軟體幫助精簡並加速了我們的簽核流程。"
+        },
+        {
+          id: 3,
+          word: "Pragmatic",
+          ipa: "/præɡˈmæt.ɪk/",
+          pos: "adj.",
+          meaning: "務實的、注重實效的",
+          sentence: "We need a pragmatic approach rather than an idealistic theory.",
+          collocation: "pragmatic solution（務實方案）、pragmatic mindset（實用思維）",
+          translation: "我們需要務實的解決方法，而不是理想化的理論。"
+        },
+        {
+          id: 4,
+          word: "Holistic",
+          ipa: "/hoʊˈlɪs.tɪk/",
+          pos: "adj.",
+          meaning: "全盤的、整體的、全面的",
+          sentence: "Management adopted a holistic view of employee well-being.",
+          collocation: "a holistic approach（全面通盤的做法）、holistic perspective（整體視角）",
+          translation: "管理階層對員工福祉採取了更為全盤整體的視角。"
+        },
+        {
+          id: 5,
+          word: "Benchmark",
+          ipa: "/ˈbentʃ.mɑːrk/",
+          pos: "n. / v.",
+          meaning: "基準、標竿；對標",
+          sentence: "Our quarterly results serve as an industry benchmark.",
+          collocation: "set a benchmark（樹立標竿）、benchmark against competitors（與對手對標）",
+          translation: "我們季度的表現已成為業界的參考標竿。"
+        },
+        {
+          id: 6,
+          word: "Mitigate",
+          ipa: "/ˈmɪt̬.ə.ɡeɪt/",
+          pos: "v.",
+          meaning: "減輕、緩和、降低風險",
+          sentence: "Diversifying investments helps mitigate potential financial risks.",
+          collocation: "mitigate risk（降低風險）、mitigate the negative impact（減輕負面衝擊）",
+          translation: "分散投資有助於降低潛在的財務風險。"
+        },
+        {
+          id: 7,
+          word: "Consensus",
+          ipa: "/kənˈsen.səs/",
+          pos: "n.",
+          meaning: "共識、一致意見",
+          sentence: "The committee finally reached a consensus after three hours of debate.",
+          collocation: "reach a consensus（達成共識）、broad consensus（廣泛共識）",
+          translation: "經過三個小時的辯論，委員會終於達成了共識。"
+        },
+        {
+          id: 8,
+          word: "Cohesive",
+          ipa: "/koʊˈhiː.sɪv/",
+          pos: "adj.",
+          meaning: "具凝聚力的、緊密連貫的",
+          sentence: "A cohesive team is capable of overcoming complex obstacles.",
+          collocation: "cohesive strategy（連貫的策略）、cohesive unit（緊密團結的團隊）",
+          translation: "一個具備高度凝聚力的團隊能夠克服複雜的阻礙。"
+        },
+        {
+          id: 9,
+          word: "Discrepancy",
+          ipa: "/dɪˈskrep.ən.si/",
+          pos: "n.",
+          meaning: "差異、不符、出入",
+          sentence: "Auditors detected a minor discrepancy between the two financial reports.",
+          collocation: "unexplained discrepancy（無法解釋的差異）、discrepancy between A and B",
+          translation: "審計人員在兩份財務報告之間發現了些微的出入與不符。"
+        },
+        {
+          id: 10,
+          word: "Sustainable",
+          ipa: "/səˈsteɪ.nə.bəl/",
+          pos: "adj.",
+          meaning: "可持續的、能長期維持的",
+          sentence: "Rapid expansion without stable revenue is not a sustainable model.",
+          collocation: "sustainable growth（可持續成長）、sustainable competitive advantage",
+          translation: "缺乏穩定營收的盲目擴張並不是一個能長期維持的商業模式。"
+        }
+      ]
+    };
+
+    const localLessonsMap = {
+      "2026-11-08": defaultTodayLesson,
+      "2026-11-07": secondBuiltinLesson
+    };
+
     // State Variables
     let currentLesson = defaultTodayLesson;
     let explanationsVisible = true;
+
+    // Dynamic Sticky Header Height Observer
+    function syncStickyNavOffset() {
+      const headerEl = document.querySelector('header');
+      const stickyNavEl = document.getElementById('stickyTabsNav');
+      if (headerEl && stickyNavEl) {
+        stickyNavEl.style.top = `${headerEl.offsetHeight}px`;
+      }
+    }
+    window.addEventListener('resize', syncStickyNavOffset);
+    window.addEventListener('DOMContentLoaded', syncStickyNavOffset);
+    if (window.ResizeObserver) {
+      const headerEl = document.querySelector('header');
+      if (headerEl) {
+        new ResizeObserver(syncStickyNavOffset).observe(headerEl);
+      }
+    }
 
     // -------------------------------------------------------------
     // 3. Audio & Speech Synthesis Engine
@@ -751,6 +1037,11 @@
     const playingStatusBadge = document.getElementById('playingStatusBadge');
     const nowPlayingDisplay = document.getElementById('nowPlayingDisplay');
     const nowPlayingText = document.getElementById('nowPlayingText');
+    const floatingMiniPlayer = document.getElementById('floatingMiniPlayer');
+    const miniPlayerStatus = document.getElementById('miniPlayerStatus');
+    const miniPlayerProgress = document.getElementById('miniPlayerProgress');
+    const miniPlayerText = document.getElementById('miniPlayerText');
+    const miniStopBtn = document.getElementById('miniStopBtn');
 
     let availableVoices = [];
     let autoPlayTimer = null;
@@ -839,9 +1130,11 @@
       clearCardHighlights();
       if (playingStatusBadge) playingStatusBadge.textContent = '準備就緒';
       if (nowPlayingDisplay) nowPlayingDisplay.classList.add('hidden');
+      if (floatingMiniPlayer) floatingMiniPlayer.classList.add('hidden');
     }
 
     if (stopAllBtn) stopAllBtn.addEventListener('click', stopPlayback);
+    if (miniStopBtn) miniStopBtn.addEventListener('click', stopPlayback);
 
     function getSelectedVoice() {
       if (!availableVoices.length) return null;
@@ -862,8 +1155,10 @@
     function scrollCardIntoViewSafely(cardElement) {
       if (!cardElement) return;
       const rect = cardElement.getBoundingClientRect();
-      const stickyOffset = 145; // Space for top header + sticky tabs bar
-      const isOutOfView = rect.top < stickyOffset || rect.bottom > window.innerHeight - 30;
+      const headerEl = document.querySelector('header');
+      const stickyNavEl = document.getElementById('stickyTabsNav');
+      const stickyOffset = ((headerEl ? headerEl.offsetHeight : 70) + (stickyNavEl ? stickyNavEl.offsetHeight : 75) + 16);
+      const isOutOfView = rect.top < stickyOffset || rect.bottom > window.innerHeight - 80;
       if (isOutOfView) {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         window.scrollTo({
@@ -898,12 +1193,17 @@
       if (playingStatusBadge) playingStatusBadge.textContent = '正在朗讀...';
       if (nowPlayingDisplay) nowPlayingDisplay.classList.remove('hidden');
       if (nowPlayingText) nowPlayingText.textContent = text;
+      if (floatingMiniPlayer) floatingMiniPlayer.classList.remove('hidden');
+      if (miniPlayerStatus) miniPlayerStatus.textContent = '🔊 朗讀中';
+      if (miniPlayerText) miniPlayerText.textContent = text;
+      if (!isAutoPlaying && miniPlayerProgress) miniPlayerProgress.textContent = '單句精聽';
 
       utterance.onend = () => {
         if (!isAutoPlaying) {
           clearCardHighlights();
           if (playingStatusBadge) playingStatusBadge.textContent = '朗讀完畢';
           if (nowPlayingDisplay) nowPlayingDisplay.classList.add('hidden');
+          if (floatingMiniPlayer) floatingMiniPlayer.classList.add('hidden');
         }
         if (onEndCallback) onEndCallback();
       };
@@ -912,6 +1212,7 @@
         clearCardHighlights();
         if (playingStatusBadge) playingStatusBadge.textContent = '朗讀停止';
         if (nowPlayingDisplay) nowPlayingDisplay.classList.add('hidden');
+        if (floatingMiniPlayer) floatingMiniPlayer.classList.add('hidden');
         isAutoPlaying = false;
       };
 
@@ -943,11 +1244,16 @@
       if (playingStatusBadge) playingStatusBadge.textContent = '🐢 0.75x 慢速慢聽中...';
       if (nowPlayingDisplay) nowPlayingDisplay.classList.remove('hidden');
       if (nowPlayingText) nowPlayingText.textContent = text;
+      if (floatingMiniPlayer) floatingMiniPlayer.classList.remove('hidden');
+      if (miniPlayerStatus) miniPlayerStatus.textContent = '🐢 0.75x 慢速分解';
+      if (miniPlayerProgress) miniPlayerProgress.textContent = '';
+      if (miniPlayerText) miniPlayerText.textContent = text;
 
       utterance.onend = () => {
         clearCardHighlights();
         if (playingStatusBadge) playingStatusBadge.textContent = '朗讀完畢';
         if (nowPlayingDisplay) nowPlayingDisplay.classList.add('hidden');
+        if (floatingMiniPlayer) floatingMiniPlayer.classList.add('hidden');
       };
       window.speechSynthesis.speak(utterance);
     }
@@ -976,26 +1282,10 @@
           btn.title = '加入收藏';
         }
       });
-    }
-
-    function bindStarButtons() {
-      document.querySelectorAll('.star-btn').forEach(btn => {
-        btn.onclick = () => {
-          const id = btn.getAttribute('data-id');
-          if (starredItems.has(id)) {
-            starredItems.delete(id);
-            showToast('已自收藏清單中移除', false);
-          } else {
-            starredItems.add(id);
-            showToast('⭐ 已加入個人收藏清單！', true);
-          }
-          try {
-            localStorage.setItem('daily_english_stars', JSON.stringify([...starredItems]));
-          } catch (e) {}
-          updateStarIcons();
-        };
-      });
-      updateStarIcons();
+      const starredCountBadge = document.getElementById('starredCountBadge');
+      if (starredCountBadge) {
+        starredCountBadge.textContent = starredItems.size;
+      }
     }
 
     function bindSpeakButtons() {
@@ -1043,14 +1333,59 @@
       });
     }
 
+    function bindStarButtons() {
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.getAttribute('data-id');
+          if (starredItems.has(id)) {
+            starredItems.delete(id);
+            showToast('已自收藏清單中移除', false);
+          } else {
+            starredItems.add(id);
+            showToast('⭐ 已加入個人收藏清單！', true);
+          }
+          try {
+            localStorage.setItem('daily_english_stars', JSON.stringify([...starredItems]));
+          } catch (e) {}
+          updateStarIcons();
+        };
+      });
+      updateStarIcons();
+    }
+
     // -------------------------------------------------------------
-    // 5. Card Rendering Logic
+    // 5. Card Rendering Logic (With Automatic Pattern Highlighting!)
     // -------------------------------------------------------------
+    function formatSentenceWithPattern(pattern, sentence, existingHighlightHtml) {
+      if (existingHighlightHtml) return existingHighlightHtml;
+      if (!pattern || !sentence) return sentence || '';
+      try {
+        const segments = pattern
+          .replace(/\.\.\./g, '|')
+          .replace(/…/g, '|')
+          .replace(/[?.!]/g, '')
+          .split('|')
+          .map(s => s.trim())
+          .filter(s => s.length > 2);
+
+        let result = sentence;
+        segments.forEach(seg => {
+          const escaped = seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const reg = new RegExp(`(${escaped})`, 'i');
+          result = result.replace(reg, '<span class="highlight-phrase text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-lg border border-blue-300 font-black">$1</span>');
+        });
+        return result;
+      } catch (e) {
+        return sentence;
+      }
+    }
+
     function formatWordSentence(word, sentence) {
       if (!word || !sentence) return sentence;
       try {
-        const regex = new RegExp(`\\b(${word}[a-z]*)\\b`, 'gi');
-        return sentence.replace(regex, '<span class="text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded-lg border border-emerald-300 font-extrabold">$1</span>');
+        const stem = word.length > 4 ? word.slice(0, -1) : word;
+        const regex = new RegExp(`\\b(${stem}[a-z]*)\\b`, 'gi');
+        return sentence.replace(regex, '<span class="highlight-phrase text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded-lg border border-emerald-300 font-extrabold">$1</span>');
       } catch (e) {
         return sentence;
       }
@@ -1062,49 +1397,57 @@
     function renderSentences(sentences) {
       if (!sentencesSection) return;
       sentencesSection.innerHTML = '';
+      const lessonDateTag = (currentLesson && currentLesson.date) ? currentLesson.date : 'today';
       sentences.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = 'sentence-card bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 relative group';
+        div.className = 'sentence-card bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 relative group';
         div.id = `sentence-card-${index + 1}`;
         div.setAttribute('data-category', item.category || 'workplace');
+        const starKey = `sent-${lessonDateTag}-${item.id || (index + 1)}`;
+        const formattedSentenceHtml = formatSentenceWithPattern(item.pattern, item.sentence, item.highlightHtml);
 
         div.innerHTML = `
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 space-y-2">
+          <div class="flex flex-col gap-3">
+            <!-- Top Row: Badges + Action Buttons -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="w-6 h-6 rounded-xl bg-blue-50 text-blue-700 text-xs font-black flex items-center justify-center border border-blue-100">${index + 1}</span>
+                <span class="w-6 h-6 rounded-xl bg-blue-50 text-blue-700 text-xs font-black flex items-center justify-center border border-blue-100 shrink-0">${index + 1}</span>
                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/70">🏷️ ${item.scenario || '實用情境'}</span>
-                <span class="text-xs font-bold text-slate-400 font-mono tracking-tight">${item.pattern}</span>
               </div>
-              <p class="font-extrabold text-slate-900 tracking-tight sentence-text select-text">${item.highlightHtml || item.sentence}</p>
+              
+              <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+                <button class="star-btn p-1.5 sm:p-2 rounded-xl text-slate-300 hover:text-amber-500 hover:bg-amber-50 transition-colors cursor-pointer" data-id="${starKey}" title="加入收藏">
+                  <svg class="w-4 h-4 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                </button>
+                <button class="copy-btn p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer" data-copy="${item.sentence}" title="複製句子">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </button>
+                <button class="slow-speak-btn bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-xl border border-slate-200 transition-all text-xs font-bold shadow-xs active:scale-95 cursor-pointer" data-text="${item.sentence}" title="0.75x 慢速精細朗讀">
+                  🐢
+                </button>
+                <button class="speak-btn bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white px-3 py-1.5 rounded-xl border border-blue-200 transition-all flex items-center gap-1 text-xs font-bold shadow-xs active:scale-95 whitespace-nowrap cursor-pointer" data-text="${item.sentence}">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                  <span>朗讀</span>
+                </button>
+              </div>
             </div>
-            
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button class="star-btn p-2 rounded-xl text-slate-300 hover:text-amber-500 hover:bg-amber-50 transition-colors" data-id="sent-${item.id}" title="加入收藏">
-                <svg class="w-4 h-4 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-              </button>
-              <button class="copy-btn p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-copy="${item.sentence}" title="複製句子">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-              </button>
-              <button class="slow-speak-btn bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-xl border border-slate-200 transition-all text-xs font-bold shadow-xs active:scale-95" data-text="${item.sentence}" title="0.75x 慢速精細朗讀">
-                🐢
-              </button>
-              <button class="speak-btn bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white px-3 py-2 rounded-xl border border-blue-200 transition-all flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95" data-text="${item.sentence}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                <span>朗讀</span>
-              </button>
+
+            <!-- Pattern & Full-Width English Sentence -->
+            <div class="space-y-1.5 w-full">
+              <div class="text-xs font-bold text-slate-400 font-mono tracking-tight break-words">${item.pattern}</div>
+              <p class="font-extrabold text-slate-900 tracking-tight sentence-text select-text w-full break-words">${formattedSentenceHtml}</p>
             </div>
           </div>
           
           <div class="explanation-box mt-4 pt-3.5 border-t border-slate-100 ${explanationsVisible ? '' : 'hidden'}">
-            <div class="bg-slate-50/90 rounded-2xl p-4 border border-slate-200/70 space-y-2.5">
-              <div class="flex items-baseline gap-2.5">
+            <div class="bg-slate-50/90 rounded-2xl p-3.5 sm:p-4 border border-slate-200/70 space-y-2.5">
+              <div class="flex flex-wrap items-baseline gap-2">
                 <span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-xs font-bold shrink-0">中文釋義</span>
                 <p class="text-slate-900 font-bold chinese-main-meaning tracking-wide">${item.explanation}</p>
               </div>
               <p class="text-slate-700 chinese-detail-text leading-relaxed font-normal">${item.detail}</p>
-              <div class="flex items-center gap-2 pt-1 border-t border-slate-200/50">
-                <span class="text-amber-600 text-sm">💡</span>
+              <div class="flex items-start gap-2 pt-1.5 border-t border-slate-200/50">
+                <span class="text-amber-600 text-sm shrink-0 mt-0.5">💡</span>
                 <span class="text-blue-800 font-semibold chinese-detail-text">練習提示：${item.tip}</span>
               </div>
             </div>
@@ -1122,43 +1465,52 @@
     function renderWords(words) {
       if (!wordsSection) return;
       wordsSection.innerHTML = '';
+      const lessonDateTag = (currentLesson && currentLesson.date) ? currentLesson.date : 'today';
       words.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = 'word-card bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 relative group';
+        div.className = 'word-card bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 relative group';
         div.id = `word-card-${index + 1}`;
+        const starKey = `word-${lessonDateTag}-${item.id || (index + 1)}`;
 
         div.innerHTML = `
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 space-y-2">
-              <div class="flex flex-wrap items-baseline gap-2.5">
-                <span class="w-6 h-6 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-black flex items-center justify-center border border-emerald-100">${index + 1}</span>
-                <h3 class="font-extrabold text-slate-900 tracking-tight word-title">${item.word}</h3>
-                <span class="text-xs text-slate-500 font-mono-ipa px-1.5 py-0.5 rounded bg-slate-100">${item.ipa}</span>
+          <div class="flex flex-col gap-3">
+            <!-- Top Row: Word Number + Action Buttons -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-black flex items-center justify-center border border-emerald-100 shrink-0">${index + 1}</span>
                 <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">${item.pos}</span>
-                <span class="text-base sm:text-lg font-extrabold text-emerald-700 ml-1.5">${item.meaning}</span>
+                <span class="text-xs text-slate-500 font-mono-ipa px-1.5 py-0.5 rounded bg-slate-100">${item.ipa}</span>
               </div>
-              <p class="font-semibold text-slate-800 word-sentence leading-relaxed pl-8">${formatWordSentence(item.word, item.sentence)}</p>
+
+              <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+                <button class="star-btn p-1.5 sm:p-2 rounded-xl text-slate-300 hover:text-amber-500 hover:bg-amber-50 transition-colors cursor-pointer" data-id="${starKey}" title="加入收藏">
+                  <svg class="w-4 h-4 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                </button>
+                <button class="copy-btn p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer" data-copy="${item.word} - ${item.sentence}" title="複製單字與例句">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </button>
+                <button class="slow-speak-btn bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-xl border border-slate-200 transition-all text-xs font-bold shadow-xs active:scale-95 cursor-pointer" data-text="${item.word}. ${item.sentence}" title="0.75x 慢速精細朗讀">
+                  🐢
+                </button>
+                <button class="speak-btn bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white px-3 py-1.5 rounded-xl border border-emerald-200 transition-all flex items-center gap-1 text-xs font-bold shadow-xs active:scale-95 whitespace-nowrap cursor-pointer" data-text="${item.word}. ${item.sentence}">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                  <span>朗讀</span>
+                </button>
+              </div>
             </div>
 
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button class="star-btn p-2 rounded-xl text-slate-300 hover:text-amber-500 hover:bg-amber-50 transition-colors" data-id="word-${item.id}" title="加入收藏">
-                <svg class="w-4 h-4 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-              </button>
-              <button class="copy-btn p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-copy="${item.word} - ${item.sentence}" title="複製單字與例句">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-              </button>
-              <button class="slow-speak-btn bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-xl border border-slate-200 transition-all text-xs font-bold shadow-xs active:scale-95" data-text="${item.word}. ${item.sentence}" title="0.75x 慢速精細朗讀">
-                🐢
-              </button>
-              <button class="speak-btn bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white px-3 py-2 rounded-xl border border-emerald-200 transition-all flex items-center gap-1.5 text-xs font-bold shadow-xs active:scale-95" data-text="${item.word}. ${item.sentence}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                <span>朗讀</span>
-              </button>
+            <!-- Word Title, Meaning & Full-Width Example Sentence -->
+            <div class="space-y-2 w-full">
+              <div class="flex flex-wrap items-baseline gap-2.5">
+                <h3 class="font-extrabold text-slate-900 tracking-tight word-title">${item.word}</h3>
+                <span class="text-base sm:text-lg font-extrabold text-emerald-700">${item.meaning}</span>
+              </div>
+              <p class="font-semibold text-slate-800 word-sentence leading-relaxed w-full break-words">${formatWordSentence(item.word, item.sentence)}</p>
             </div>
           </div>
           
           <div class="explanation-box mt-4 pt-3.5 border-t border-slate-100 ${explanationsVisible ? '' : 'hidden'}">
-            <div class="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-200/60 space-y-2 text-slate-700 chinese-detail-text">
+            <div class="bg-emerald-50/60 rounded-2xl p-3.5 sm:p-4 border border-emerald-200/60 space-y-2 text-slate-700 chinese-detail-text">
               <p><strong class="text-slate-900 font-bold">常見搭配：</strong><span class="font-medium text-slate-800">${item.collocation}</span></p>
               <p><strong class="text-slate-900 font-bold">例句翻譯：</strong><span class="font-medium text-slate-800">${item.translation}</span></p>
             </div>
@@ -1185,36 +1537,57 @@
     // -------------------------------------------------------------
     // 6. Scenario Filter & Star Filter
     // -------------------------------------------------------------
+    const emptySentencesNotice = document.getElementById('emptySentencesNotice');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+    const showStarredBtn = document.getElementById('showStarredBtn');
+    let showingOnlyStarred = false;
+
+    function checkEmptySentencesState() {
+      if (!sentencesSection || !emptySentencesNotice) return;
+      const visibleCards = sentencesSection.querySelectorAll('.sentence-card:not(.hidden)');
+      emptySentencesNotice.classList.toggle('hidden', visibleCards.length > 0);
+    }
+
+    function applyScenarioFilter(filterValue) {
+      showingOnlyStarred = false;
+      if (showStarredBtn) {
+        showStarredBtn.className = 'px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1 cursor-pointer';
+      }
+      document.querySelectorAll('.scenario-filter-btn').forEach(b => {
+        const isMatch = b.getAttribute('data-scenario') === filterValue;
+        b.className = isMatch
+          ? 'scenario-filter-btn px-3 py-1.5 rounded-xl font-bold bg-blue-600 text-white shadow-sm transition-all shrink-0 cursor-pointer'
+          : 'scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0 cursor-pointer';
+      });
+
+      const cards = sentencesSection ? sentencesSection.querySelectorAll('.sentence-card') : [];
+      cards.forEach((card) => {
+        const cat = card.getAttribute('data-category');
+        if (filterValue === 'all') {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.toggle('hidden', cat !== filterValue);
+        }
+      });
+      checkEmptySentencesState();
+    }
+
     document.querySelectorAll('.scenario-filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.scenario-filter-btn').forEach(b => {
-          b.className = 'scenario-filter-btn px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0';
-        });
-        btn.className = 'scenario-filter-btn px-3 py-1.5 rounded-xl font-bold bg-blue-600 text-white shadow-sm transition-all shrink-0';
-
-        const filter = btn.getAttribute('data-scenario');
-        const cards = sentencesSection ? sentencesSection.querySelectorAll('.sentence-card') : [];
-
-        cards.forEach((card) => {
-          const cat = card.getAttribute('data-category');
-          if (filter === 'all') {
-            card.classList.remove('hidden');
-          } else {
-            card.classList.toggle('hidden', cat !== filter);
-          }
-        });
+        applyScenarioFilter(btn.getAttribute('data-scenario'));
       });
     });
 
-    const showStarredBtn = document.getElementById('showStarredBtn');
-    let showingOnlyStarred = false;
+    if (resetFilterBtn) {
+      resetFilterBtn.addEventListener('click', () => applyScenarioFilter('all'));
+    }
 
     if (showStarredBtn) {
       showStarredBtn.addEventListener('click', () => {
         showingOnlyStarred = !showingOnlyStarred;
         showStarredBtn.className = showingOnlyStarred
-          ? 'px-3 py-1.5 rounded-xl font-bold bg-amber-500 text-white shadow-sm transition-all shrink-0 flex items-center gap-1'
-          : 'px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1';
+          ? 'px-3 py-1.5 rounded-xl font-bold bg-amber-500 text-white shadow-sm transition-all shrink-0 flex items-center gap-1 cursor-pointer'
+          : 'px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1 cursor-pointer';
 
         const cards = sentencesSection ? sentencesSection.querySelectorAll('.sentence-card') : [];
         cards.forEach(card => {
@@ -1226,7 +1599,43 @@
             card.classList.remove('hidden');
           }
         });
+        checkEmptySentencesState();
       });
+    }
+
+    const showStarredWordsBtn = document.getElementById('showStarredWordsBtn');
+    const emptyWordsNotice = document.getElementById('emptyWordsNotice');
+    const resetWordFilterBtn = document.getElementById('resetWordFilterBtn');
+    let showingOnlyStarredWords = false;
+
+    function applyWordsStarFilter(onlyStarred) {
+      showingOnlyStarredWords = onlyStarred;
+      if (showStarredWordsBtn) {
+        showStarredWordsBtn.className = showingOnlyStarredWords
+          ? 'px-3 py-1.5 rounded-xl font-bold bg-amber-500 text-white shadow-sm transition-all shrink-0 flex items-center gap-1 cursor-pointer'
+          : 'px-3 py-1.5 rounded-xl font-semibold bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1 cursor-pointer';
+      }
+      const cards = wordsSection ? wordsSection.querySelectorAll('.word-card') : [];
+      cards.forEach(card => {
+        const starBtn = card.querySelector('.star-btn');
+        const id = starBtn ? starBtn.getAttribute('data-id') : '';
+        if (showingOnlyStarredWords) {
+          card.classList.toggle('hidden', !starredItems.has(id));
+        } else {
+          card.classList.remove('hidden');
+        }
+      });
+      if (wordsSection && emptyWordsNotice) {
+        const visible = wordsSection.querySelectorAll('.word-card:not(.hidden)');
+        emptyWordsNotice.classList.toggle('hidden', visible.length > 0);
+      }
+    }
+
+    if (showStarredWordsBtn) {
+      showStarredWordsBtn.addEventListener('click', () => applyWordsStarFilter(!showingOnlyStarredWords));
+    }
+    if (resetWordFilterBtn) {
+      resetWordFilterBtn.addEventListener('click', () => applyWordsStarFilter(false));
     }
 
     // -------------------------------------------------------------
@@ -1235,37 +1644,36 @@
     const tabSentencesBtn = document.getElementById('tabSentencesBtn');
     const tabWordsBtn = document.getElementById('tabWordsBtn');
     const sentencesWrapper = document.getElementById('sentencesWrapper');
+    const wordsWrapper = document.getElementById('wordsWrapper');
 
     function switchMainTab(targetTab) {
       if (targetTab === 'words') {
-        if (wordsSection) wordsSection.classList.remove('hidden');
+        if (wordsWrapper) wordsWrapper.classList.remove('hidden');
         if (sentencesWrapper) sentencesWrapper.classList.add('hidden');
         if (tabWordsBtn) {
-          tabWordsBtn.className = 'px-5 py-2 rounded-xl font-extrabold text-xs sm:text-sm bg-white text-emerald-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer';
+          tabWordsBtn.className = 'justify-center px-3 sm:px-5 py-2 rounded-xl font-extrabold text-xs sm:text-sm bg-white text-emerald-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
         }
         if (tabSentencesBtn) {
-          tabSentencesBtn.className = 'px-5 py-2 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2 cursor-pointer';
+          tabSentencesBtn.className = 'justify-center px-3 sm:px-5 py-2 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
         }
       } else {
         if (sentencesWrapper) sentencesWrapper.classList.remove('hidden');
-        if (wordsSection) wordsSection.classList.add('hidden');
+        if (wordsWrapper) wordsWrapper.classList.add('hidden');
         if (tabSentencesBtn) {
-          tabSentencesBtn.className = 'px-5 py-2 rounded-xl font-extrabold text-xs sm:text-sm bg-white text-blue-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer';
+          tabSentencesBtn.className = 'justify-center px-3 sm:px-5 py-2 rounded-xl font-extrabold text-xs sm:text-sm bg-white text-blue-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
         }
         if (tabWordsBtn) {
-          tabWordsBtn.className = 'px-5 py-2 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2 cursor-pointer';
+          tabWordsBtn.className = 'justify-center px-3 sm:px-5 py-2 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
         }
       }
     }
 
-    if (tabSentencesBtn && tabWordsBtn) {
-      tabSentencesBtn.addEventListener('click', () => {
-        switchMainTab('sentences');
-      });
+    if (tabSentencesBtn) {
+      tabSentencesBtn.addEventListener('click', () => switchMainTab('sentences'));
+    }
 
-      tabWordsBtn.addEventListener('click', () => {
-        switchMainTab('words');
-      });
+    if (tabWordsBtn) {
+      tabWordsBtn.addEventListener('click', () => switchMainTab('words'));
     }
 
     const toggleExplanationBtn = document.getElementById('toggleExplanationBtn');
@@ -1281,7 +1689,7 @@
             box.classList.add('hidden');
           }
         });
-        toggleExpText.textContent = explanationsVisible ? '隱藏中文解說（自我測驗）' : '顯示中文解說';
+        toggleExpText.textContent = explanationsVisible ? '隱藏中文解說' : '顯示中文解說';
       });
     }
 
@@ -1316,7 +1724,7 @@
     }
 
     // -------------------------------------------------------------
-    // 9. Calendar Picker
+    // 9. Calendar Picker & Date Switching
     // -------------------------------------------------------------
     const openCalendarBtn = document.getElementById('openCalendarBtn');
     const calendarModal = document.getElementById('calendarModal');
@@ -1327,13 +1735,21 @@
     const calNextMonthBtn = document.getElementById('calNextMonthBtn');
     const calJumpTodayBtn = document.getElementById('calJumpTodayBtn');
     const calendarCurrentDateLabel = document.getElementById('calendarCurrentDateLabel');
+    const lessonDateSelect = document.getElementById('lessonDateSelect');
 
     let calYear = 2026;
     let calMonth = 10;
-    let existingLessonDates = new Set(["2026-11-08"]);
+    let existingLessonDates = new Set(["2026-11-08", "2026-11-07"]);
 
     if (openCalendarBtn) {
       openCalendarBtn.addEventListener('click', () => {
+        if (currentLesson && currentLesson.date) {
+          const parts = currentLesson.date.split('-');
+          if (parts.length === 3) {
+            calYear = parseInt(parts[0], 10) || 2026;
+            calMonth = (parseInt(parts[1], 10) || 11) - 1;
+          }
+        }
         renderCalendarDays();
         calendarModal.classList.remove('hidden');
       });
@@ -1400,7 +1816,7 @@
         const hasLesson = existingLessonDates.has(dateKey);
         const isCurrentView = (currentLesson && currentLesson.date === dateKey);
 
-        let btnClass = 'p-2 rounded-2xl flex flex-col items-center justify-center transition-all relative font-bold ';
+        let btnClass = 'p-2 rounded-2xl flex flex-col items-center justify-center transition-all relative font-bold cursor-pointer ';
         if (isCurrentView) {
           btnClass += 'bg-blue-600 text-white shadow-md shadow-blue-500/25';
         } else if (hasLesson) {
@@ -1425,28 +1841,29 @@
       }
     }
 
-    const lessonDateSelect = document.getElementById('lessonDateSelect');
     async function selectLessonByDate(targetDate) {
+      stopPlayback();
       if (calendarCurrentDateLabel) calendarCurrentDateLabel.textContent = `📅 ${targetDate}`;
       if (lessonDateSelect) lessonDateSelect.value = targetDate;
-
-      if (targetDate === "2026-11-08" && !db) {
-        renderLesson(defaultTodayLesson);
-        return;
-      }
 
       if (db) {
         try {
           const doc = await db.collection('daily_lessons').doc(targetDate).get();
           if (doc.exists) {
             renderLesson(doc.data());
-            showToast(`已載入 ${targetDate} 學習教材`, true);
-          } else {
-            showToast(`${targetDate} 尚無教材，管理員可使用「批次補登」新增`, false);
+            showToast(`已載入 ${targetDate} 雲端學習教材`, true);
+            return;
           }
         } catch (err) {
           console.error(err);
         }
+      }
+
+      if (localLessonsMap[targetDate]) {
+        renderLesson(localLessonsMap[targetDate]);
+        showToast(`已切換至 ${targetDate} 教材：${localLessonsMap[targetDate].title}`, true);
+      } else {
+        showToast(`${targetDate} 尚無教材，管理員可使用「批次補登」新增`, false);
       }
     }
 
@@ -1486,10 +1903,12 @@
         if (playingItemProgressTag) playingItemProgressTag.textContent = `${currentNum} / ${totalNum}`;
         if (autoPlayProgressBar) autoPlayProgressBar.style.width = `${(currentNum / totalNum) * 100}%`;
         if (shadowingCountdownBadge) shadowingCountdownBadge.textContent = '🔊 正在播放';
+        if (miniPlayerProgress) miniPlayerProgress.textContent = `${currentNum} / ${totalNum}`;
 
         speakText(currentItem.text, currentItem.card, () => {
           if (!isAutoPlaying) return;
           if (shadowingCountdownBadge) shadowingCountdownBadge.textContent = '🗣️ 請大聲跟讀...';
+          if (miniPlayerStatus) miniPlayerStatus.textContent = '🗣️ 請開口跟讀...';
           autoPlayIndex++;
           autoPlayTimer = setTimeout(playNext, 1800);
         });
@@ -1502,10 +1921,7 @@
     if (playAllSentencesBtn) {
       playAllSentencesBtn.addEventListener('click', () => {
         switchMainTab('sentences');
-        // Ensure all sentences are visible when starting full continuous reading
-        if (sentencesSection) {
-          sentencesSection.querySelectorAll('.sentence-card').forEach(c => c.classList.remove('hidden'));
-        }
+        applyScenarioFilter('all');
         const sentenceItems = [];
         const cards = sentencesSection ? sentencesSection.querySelectorAll('.sentence-card') : [];
         cards.forEach(card => {
@@ -1522,6 +1938,7 @@
     if (playAllWordsBtn) {
       playAllWordsBtn.addEventListener('click', () => {
         switchMainTab('words');
+        applyWordsStarFilter(false);
         const wordItems = [];
         const cards = wordsSection ? wordsSection.querySelectorAll('.word-card') : [];
         cards.forEach(card => {
@@ -1613,28 +2030,27 @@
         try {
           const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Daily_English_${lesson.date || 'Practice'}.doc`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `Daily_English_${lesson.date || 'Lesson'}.doc`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
           URL.revokeObjectURL(url);
-          showToast('📄 已成功下載 Word 講義！', true);
-        } catch (e) {
-          showToast('Word 檔案產生失敗', false);
+          showToast('📄 Word 講義 (.doc) 已開始下載！', true);
+        } catch (err) {
+          showToast('下載失敗，請嘗試使用列印或複製功能', false);
         }
       });
     }
 
-    // B. Print / Save as PDF
+    // B. Print / Save as A4 PDF
     if (printHandoutBtn) {
       printHandoutBtn.addEventListener('click', () => {
         if (exportMenu) exportMenu.classList.add('hidden');
-        stopPlayback();
         const lesson = currentLesson || defaultTodayLesson;
-        const printWindow = window.open('', '_blank', 'width=900,height=950');
-
+        const printWindow = window.open('', '_blank', 'width=900,height=800');
+        
         if (!printWindow) {
           window.print();
           return;
@@ -1644,8 +2060,11 @@
           <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; page-break-inside: avoid;">
             <div style="display: flex; align-items: baseline; gap: 8px;">
               <span style="background: #2563eb; color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: bold;">${idx + 1}</span>
-              <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600;">${s.scenario || '情境'}</span>
-              <strong style="font-size: 14.5px; color: #0f172a; margin-left: 4px;">${s.sentence}</strong>
+              <span style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: bold;">${s.scenario || '實用情境'}</span>
+              <span style="color: #64748b; font-family: monospace; font-size: 12px;">${s.pattern}</span>
+            </div>
+            <div style="font-size: 15px; font-weight: 800; color: #0f172a; margin-top: 5px; padding-left: 28px;">
+              ${s.sentence}
             </div>
             <div style="margin-top: 6px; font-size: 13px; color: #334155; line-height: 1.5; padding-left: 28px;">
               <div><strong>【中文釋義】</strong>${s.explanation}</div>
@@ -1742,8 +2161,11 @@
     }
 
     // -------------------------------------------------------------
-    // 12. Firestore Remote Loader & Admin Actions
+    // 12. Firebase Cloud Sync & Admin Authentication
     // -------------------------------------------------------------
+    const seedDataBtn = document.getElementById('seedDataBtn');
+    const seedBtnLabel = document.getElementById('seedBtnLabel');
+
     async function loadLessonsListFromFirestore() {
       if (!db) return;
       try {
@@ -1751,10 +2173,14 @@
         if (!snapshot.empty) {
           if (lessonDateSelect) lessonDateSelect.innerHTML = '';
           existingLessonDates.clear();
+          Object.keys(localLessonsMap).forEach(k => existingLessonDates.add(k));
+
+          const addedSelectKeys = new Set();
           snapshot.forEach(doc => {
             const data = doc.data();
             const dKey = data.date || doc.id;
             existingLessonDates.add(dKey);
+            addedSelectKeys.add(dKey);
             if (lessonDateSelect) {
               const opt = document.createElement('option');
               opt.value = dKey;
@@ -1762,17 +2188,26 @@
               lessonDateSelect.appendChild(opt);
             }
           });
+
+          Object.keys(localLessonsMap).forEach(k => {
+            if (!addedSelectKeys.has(k) && lessonDateSelect) {
+              const opt = document.createElement('option');
+              opt.value = k;
+              opt.textContent = `${k} (${localLessonsMap[k].title})`;
+              lessonDateSelect.appendChild(opt);
+            }
+          });
+
           const firstData = snapshot.docs[0].data();
           renderLesson(firstData);
-          if (calendarCurrentDateLabel) calendarCurrentDateLabel.textContent = `📅 ${firstData.date || '今日教材'}`;
+          if (calendarCurrentDateLabel) {
+            calendarCurrentDateLabel.textContent = `📅 ${firstData.date || '今日教材'}`;
+          }
         }
       } catch (err) {
         console.log('Firestore read notice:', err.message);
       }
     }
-
-    const seedDataBtn = document.getElementById('seedDataBtn');
-    const seedBtnLabel = document.getElementById('seedBtnLabel');
 
     if (seedDataBtn) {
       seedDataBtn.addEventListener('click', async () => {
@@ -1787,22 +2222,22 @@
 
         if (seedBtnLabel) seedBtnLabel.textContent = '寫入中...';
         try {
-          await db.collection('daily_lessons').doc(defaultTodayLesson.date).set(defaultTodayLesson);
-          if (seedBtnLabel) seedBtnLabel.textContent = '已成功儲存至 Firestore！';
-          showToast(`今日教材 (${defaultTodayLesson.date}) 已成功寫入雲端！`, true);
+          const targetLesson = currentLesson || defaultTodayLesson;
+          await db.collection('daily_lessons').doc(targetLesson.date).set(targetLesson);
+          if (seedBtnLabel) seedBtnLabel.textContent = '已成功儲存！';
+          showToast(`教材 (${targetLesson.date}) 已成功寫入雲端！`, true);
           setTimeout(() => {
-            if (seedBtnLabel) seedBtnLabel.textContent = '同步今日教材至雲端';
+            if (seedBtnLabel) seedBtnLabel.textContent = '同步教材至雲端';
           }, 3000);
           loadLessonsListFromFirestore();
         } catch (err) {
-          console.error('Save to Firestore error:', err);
           if (seedBtnLabel) seedBtnLabel.textContent = '同步失敗';
           showToast(`寫入失敗：${err.message}`, false);
         }
       });
     }
 
-    // Modal Import Controls
+    // Batch Backfill Modal Events
     const openImportModalBtn = document.getElementById('openImportModalBtn');
     const importModal = document.getElementById('importModal');
     const closeImportModalBtn = document.getElementById('closeImportModalBtn');
@@ -1833,10 +2268,10 @@
       fillSampleBtn.addEventListener('click', () => {
         if (importJsonInput) {
           importJsonInput.value = JSON.stringify({
-            date: (importDateInput ? importDateInput.value : "") || "2026-11-07",
-            title: "過往歷史教材補登範例",
-            sentences: defaultTodayLesson.sentences,
-            words: defaultTodayLesson.words
+            date: (importDateInput && importDateInput.value) || "2026-11-07",
+            title: secondBuiltinLesson.title,
+            sentences: secondBuiltinLesson.sentences,
+            words: secondBuiltinLesson.words
           }, null, 2);
         }
       });
@@ -1861,7 +2296,7 @@
 
         let parsed = null;
         try {
-          parsed = JSON.parse(importJsonInput ? importJsonInput.value : "{}");
+          parsed = JSON.parse(importJsonInput.value);
         } catch (e) {
           if (modalNoticeMsg) {
             modalNoticeMsg.className = 'text-xs p-3 rounded-xl bg-red-50 text-red-900 border border-red-200 block font-semibold';
@@ -1874,15 +2309,15 @@
 
         try {
           for (const item of lessonsToUpload) {
-            const targetDate = item.date || (importDateInput ? importDateInput.value : "");
-            const targetTitle = item.title || (importTitleInput ? importTitleInput.value : "") || "每日英文練習";
+            const targetDate = item.date || (importDateInput && importDateInput.value);
+            const targetTitle = item.title || (importTitleInput && importTitleInput.value) || "每日英文練習";
             const docData = {
               date: targetDate,
               title: targetTitle,
               sentences: item.sentences || [],
               words: item.words || []
             };
-            if (db && targetDate) {
+            if (db) {
               await db.collection('daily_lessons').doc(targetDate).set(docData);
             }
           }
@@ -1895,36 +2330,6 @@
             modalNoticeMsg.className = 'text-xs p-3 rounded-xl bg-red-50 text-red-900 border border-red-200 block font-semibold';
             modalNoticeMsg.textContent = `儲存失敗：${err.message}`;
           }
-        }
-      });
-    }
-
-    // Google Auth Login
-    async function handleGoogleLogin() {
-      if (!auth) {
-        showToast('Firebase 認證模組尚未就緒，請稍候重試。', false);
-        return;
-      }
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        await auth.signInWithPopup(provider);
-      } catch (err) {
-        try {
-          await auth.signInWithRedirect(provider);
-        } catch (redirErr) {
-          showToast(`登入失敗：${redirErr.message}`, false);
-        }
-      }
-    }
-
-    if (loginBtn) loginBtn.addEventListener('click', handleGoogleLogin);
-    if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', handleGoogleLogin);
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        if (auth) {
-          await auth.signOut();
-          showToast('已安全登出。', true);
         }
       });
     }
@@ -1948,11 +2353,9 @@
             if (userEmailSpan) userEmailSpan.textContent = user.email || '已登入';
 
             if (user.email === ADMIN_EMAIL) {
-              if (userProfileArea) userProfileArea.className = 'flex items-center gap-2 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-xl text-xs text-emerald-800 shadow-sm font-bold';
               showToast(`管理員 ${user.email} 已認證，具備最高雲端寫入權限！`, true);
             } else {
-              if (userProfileArea) userProfileArea.className = 'flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-xl text-xs text-slate-700 shadow-sm font-semibold';
-              showToast(`以一般訪客身分登入 (${user.email})，僅提供閱讀與練習。`, false);
+              showToast(`以訪客身分登入 (${user.email})，僅提供閱讀與練習。`, false);
             }
           } else {
             if (loginBtn) loginBtn.classList.remove('hidden');
@@ -1961,14 +2364,39 @@
         });
       }
     } catch (err) {
-      console.warn('Firebase init warning:', err);
       if (firestoreStatus) {
-        firestoreStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span>離線本機資料庫';
-        firestoreStatus.className = 'inline-flex items-center gap-1.5 text-xs text-slate-500 font-medium';
+        firestoreStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span>本機練習模式';
       }
     }
 
-    // Keyboard Shortcuts: Esc = Stop All
+    async function handleGoogleLogin() {
+      if (!auth) {
+        showToast('Firebase 認證尚未就緒，請稍候重試。', false);
+        return;
+      }
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (err) {
+        try {
+          await auth.signInWithRedirect(provider);
+        } catch (redirErr) {
+          showToast(`登入失敗：${redirErr.message}`, false);
+        }
+      }
+    }
+
+    if (loginBtn) loginBtn.addEventListener('click', handleGoogleLogin);
+    if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', handleGoogleLogin);
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        if (auth) {
+          await auth.signOut();
+          showToast('已安全登出。', true);
+        }
+      });
+    }
+
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.code === 'Escape') {
