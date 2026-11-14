@@ -1386,6 +1386,11 @@
     // State Variables
     let currentLesson = localLessonsMap[REAL_TODAY_STR] || defaultTodayLesson;
     let explanationsVisible = true;
+    let starredItems = new Set();
+    try {
+      const savedStars = JSON.parse(localStorage.getItem('daily_english_stars') || '[]');
+      starredItems = new Set(savedStars);
+    } catch (e) {}
 
     // Initialize Top Date Label & Dropdown with Real Device Dates + All Cached AI Dates
     const initDateLabelEl = document.getElementById('calendarCurrentDateLabel');
@@ -1653,12 +1658,6 @@
     // -------------------------------------------------------------
     // 4. Starred Management & Quick Action Handlers
     // -------------------------------------------------------------
-    let starredItems = new Set();
-    try {
-      const savedStars = JSON.parse(localStorage.getItem('daily_english_stars') || '[]');
-      starredItems = new Set(savedStars);
-    } catch (e) {}
-
     function updateStarIcons() {
       document.querySelectorAll('.star-btn').forEach(btn => {
         const id = btn.getAttribute('data-id');
@@ -3112,7 +3111,7 @@
         required: ["title", "sentences", "words"]
       };
 
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent?key=${encodeURIComponent(apiKey)}`;
       const payload = {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
